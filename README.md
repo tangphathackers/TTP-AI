@@ -27,7 +27,7 @@
 
 **Tăng Thiện Phát** – đam mê tối ưu Android, script automation và phát triển hệ thống  
 📬 Email: sophuhieu3kg@gmail.com  
-🌐 Website: [Đang cập nhật]  
+🌐 Youtube: [@TangPhat_Wisdomlikethesea]  
 🎯 Định hướng: "Nhanh – Mạnh – Mượt – Không Root – Tùy Biến"
 
 ---
