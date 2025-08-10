@@ -1,0 +1,964 @@
+/* --- TTP-AI Interface v30.2
+/* --- 1. BIẾN TOÀN CỤC & THIẾT LẬP CHUNG --- */
+:root {
+color-scheme: light;
+--font-main: 'Inter', system-ui, -apple-system, sans-serif;
+--font-mono: 'Share Tech Mono', monospace;
+--background-image: url('https://images.unsplash.com/photo-1511447333015-45b65e60f6d5?q=80&w=2152&auto=format&fit=crop');
+--panel-bg: rgba(40, 40, 40, 0.45);
+--panel-border: rgba(255, 255, 255, 0.2);
+--text-primary: #f5f5f7;
+--text-secondary: #a1a1a6;
+--accent-color: #0a84ff;
+--danger-color: #ff453a;
+--success-color: #32d74b;
+}
+body {
+margin: 0; padding: 0;
+height: 100vh; width: 100vw;
+overflow: hidden;
+color: var(--text-primary);
+font-family: var(--font-main);
+background-color: #000;
+scrollbar-width: none;
+min-height: 100vh;
+}
+* {
+-webkit-tap-highlight-color: transparent;
+}
+body::-webkit-scrollbar {
+display: none;
+}
+/* --- 2. HIỆU ỨNG NỀN --- */
+body::before {
+content: '';
+position: fixed;
+top: 0; left: 0; width: 100%; height: 100%;
+background: var(--background-image) no-repeat center center/cover;
+filter: blur(15px) brightness(0.5);
+z-index: -2;
+}
+#particleCanvas {
+position: fixed;
+top: 0; left: 0; width: 100%; height: 100%;
+z-index: -1;
+}
+/* --- 3. LAYOUT CHÍNH --- */
+.main-container {
+height: 100vh; width: 100vw;
+box-sizing: border-box;
+padding: 20px;
+display: flex;
+flex-direction: column;
+}
+.main-grid {
+flex-grow: 1;
+display: grid;
+grid-template-columns: 1fr 1.3fr 1fr;
+gap: 20px;
+height: 100%;
+overflow: hidden;
+}
+/* ======================================================= */
+/* --- BẮT ĐẦU: SỬA LỖI FAB CHE CHATBOT TRÊN MOBILE --- */
+/* ======================================================= */
+
+/* Áp dụng các quy tắc này cho các màn hình có chiều rộng
+   tối đa là 1024px (tương ứng với điểm gãy trong media query cũ của bạn) */
+@media (max-width: 1024px) {
+    
+    /* Tìm đến cột thứ ba (chứa Chatbot) khi layout chuyển thành 1 cột */
+    .main-grid .grid-column:nth-child(3) {
+        
+        /* Thêm một khoảng đệm ở dưới đáy của cột.
+           Giá trị 80px đủ lớn để chứa FAB (khoảng 60px) và một chút khoảng trống. */
+        padding-bottom: 80px;
+    }
+
+    /* Điều chỉnh lại vị trí của FAB trên mobile để trông đẹp hơn */
+    .fab-container {
+        bottom: 20px;
+        right: 20px;
+    }
+}
+
+/* Thêm một quy tắc nhỏ cho màn hình lớn hơn để đảm bảo không bị ảnh hưởng */
+@media (min-width: 1025px) {
+    /* Đảm bảo FAB không bị che bởi thanh cuộn của cột (nếu có) */
+    .fab-container {
+        z-index: 10;
+    }
+}
+.grid-column {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    overflow-y: auto;
+    scrollbar-width: none;
+    min-height: 0; 
+    will-change: transform;
+    min-width: 0;
+}
+
+.grid-column::-webkit-scrollbar { 
+    display: none; 
+}
+/* --- 4. STYLE PANEL KÍNH MỜ --- */
+.glass-panel {
+background: var(--panel-bg);
+border: 1px solid var(--panel-border);
+border-radius: 24px;
+padding: 20px;
+backdrop-filter: blur(20px) saturate(180%);
+-webkit-backdrop-filter: blur(20px) saturate(180%);
+box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+animation: fadeIn 0.5s ease-out forwards;
+opacity: 0;
+display: flex;
+flex-direction: column;
+min-height: 0;
+flex-shrink: 1;
+will-change: transform, opacity;
+overflow: hidden;
+}
+.panel-title {
+font-size: 1.1rem;
+font-weight: 600;
+margin: 0 0 15px 0;
+padding-bottom: 15px;
+border-bottom: 1px solid var(--panel-border);
+flex-shrink: 0;
+word-break: break-word;
+}
+/* --- 5. STYLE NÚT BẤM & CÁC THÀNH PHẦN TƯƠNG TÁC --- */
+/* TÌM VÀ CẬP NHẬT KHỐI NÀY */
+.button-grid, .button-grid-small {    
+    display: grid;
+    gap: 10px;    
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));   
+    will-change: contents; 
+}
+/* TÌM VÀ CẬP NHẬT KHỐI NÀY */
+.button {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--panel-border);
+    color: var(--text-primary);
+    padding: 12px;
+    font-family: var(--font-main);
+    font-size: 0.9rem;
+    font-weight: 600;
+    border-radius: 12px;
+    cursor: pointer;
+    text-align: center;
+    transform: translateZ(0);
+    transition: transform 0.15s cubic-bezier(0.2, 0, 0.38, 0.9),
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
+    will-change: transform, background-color;
+    min-height: 48px; 
+}
+.button:hover:not(:disabled) {
+background: rgba(255, 255, 255, 0.2);
+transform: translateY(-3px);
+box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+}
+.button:active:not(:disabled) {
+transform: translateY(0px);
+background: rgba(0, 0, 0, 0.2);
+transition-duration: 0.05s;
+}
+.button:focus-visible {
+outline: none;
+box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.5),
+0 8px 20px rgba(0, 0, 0, 0.25);
+}
+.button:disabled {
+cursor: not-allowed;
+background: rgba(0, 0, 0, 0.2);
+color: #6d6d70;
+transform: none;
+box-shadow: none;
+}
+.button.button-danger { background: rgba(255, 69, 58, 0.3); }
+.button.button-danger:hover:not(:disabled) {
+background: rgba(255, 69, 58, 0.5);
+box-shadow: 0 8px 20px rgba(255, 69, 58, 0.2);
+}
+.button.button-danger:active:not(:disabled) {
+background: rgba(200, 30, 20, 0.4);
+}
+.button.disabled-feature {
+cursor: not-allowed !important;
+filter: saturate(0.5);
+opacity: 0.6;
+}
+#chat-send-btn:focus-visible {
+outline: none;
+box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.6);
+}
+#chat-input:focus {
+outline: none;
+border-color: var(--accent-color);
+box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.3);
+}
+#logSelector:focus {
+outline: none;
+border-color: var(--accent-color);
+box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.3);
+}
+/* --- 6. STYLE CÁC KHU VỰC THÔNG TIN --- */
+.stats-grid {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 15px;
+}
+.stat-item { text-align: center; }
+.stat-item .label {
+font-size: 0.8rem;
+color: var(--text-secondary);
+text-transform: uppercase;
+letter-spacing: 0.5px;
+}
+.stat-item .value {
+font-size: 2.2rem;
+font-weight: 600;
+color: var(--text-primary);
+}
+.key-info, .device-info {
+font-size: 0.9rem;
+line-height: 1.7;
+color: var(--text-secondary);
+}
+.key-info {
+text-align: center;
+margin-bottom: 10px;
+padding-bottom: 10px;
+border-bottom: 1px solid var(--panel-border);
+}
+.key-info strong, .device-info b {
+color: var(--text-primary);
+font-weight: 600;
+}
+/* --- 7. PANEL ĐỘNG & THANH CUỘN --- */
+.glass-panel.chat-panel,
+.glass-panel.log-panel {
+flex-grow: 1;
+}
+.chat-container, .command-log, #logViewerContent {
+flex-grow: 1;
+overflow-y: auto;
+overflow-x: hidden;
+font-family: var(--font-mono);
+font-size: 0.85rem;
+word-break: break-word;
+-webkit-overflow-scrolling: touch;
+overscroll-behavior: contain;
+padding: 5px 10px;
+}
+.chat-container::-webkit-scrollbar, .command-log::-webkit-scrollbar, #logViewerContent::-webkit-scrollbar { width: 8px; }
+.chat-container::-webkit-scrollbar-track, .command-log::-webkit-scrollbar-track, #logViewerContent::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.2); border-radius: 10px; }
+.chat-container::-webkit-scrollbar-thumb, .command-log::-webkit-scrollbar-thumb, #logViewerContent::-webkit-scrollbar-thumb {
+background-color: rgba(255, 255, 255, 0.4); border-radius: 10px;
+border: 2px solid transparent; background-clip: content-box;
+}
+.chat-input-area { display: flex; margin-top: 15px; gap: 10px; flex-shrink: 0; }
+#chat-input {
+flex-grow: 1; background: rgba(0,0,0,0.3); border: 1px solid var(--panel-border);
+color: var(--text-primary); padding: 10px 15px; border-radius: 12px;
+font-size: 0.9rem; font-family: var(--font-main);
+flex-grow: 1;
+flex-shrink: 1;
+min-width: 50px;
+}
+#chat-input:focus { outline: none; border-color: var(--accent-color); }
+#chat-send-btn {
+background: var(--accent-color); color: white; border: none; border-radius: 12px;
+padding: 0 20px; font-weight: 600; cursor: pointer; transition: background-color 0.2s ease;
+flex-shrink: 0;
+white-space: nowrap;
+}
+.message { display: flex; max-width: 90%; margin-bottom: 12px; animation: fadeIn 0.3s ease-out; }
+.message.user { justify-content: flex-end; margin-left: auto; }
+.message.ai { justify-content: flex-start; }
+.message .bubble { padding: 10px 15px; border-radius: 20px; line-height: 1.5; }
+.message.user .bubble { background: var(--accent-color); color: white; border-bottom-right-radius: 5px; }
+.message.ai .bubble { background: #3a3a3c; color: var(--text-primary); border-bottom-left-radius: 5px; }
+.message.loading .bubble { font-style: italic; animation: pulse 1.5s infinite ease-in-out; }
+.log-entry { margin-bottom: 5px; }
+.log-entry .timestamp { color: var(--text-secondary); margin-right: 8px; }
+.log-entry .status { font-weight: 600; margin-right: 8px; }
+.log-entry .status-success { color: var(--success-color); }
+.log-entry .status-error { color: var(--danger-color); }
+/* --- 8. STYLE PANEL AI, CPU, LOG --- */
+.ai-diagnostic-center {
+text-align: center;
+display: flex;
+flex-direction: column;
+align-items: center;
+gap: 15px;
+}
+#aiInitialMessage {
+color: var(--text-secondary);
+font-size: 0.9rem;
+margin: 0;
+}
+.ai-suggestion {
+min-height: 40px;
+font-size: 1rem;
+line-height: 1.6;
+display: none;
+font-weight: 600;
+}
+#diagnostic-actions {
+display: flex;
+flex-direction: column;
+align-items: center;
+gap: 10px;
+width: 100%;
+}
+#runDiagnosticsBtn, #diagnostic-actions .button.ai-action {
+width: 100%;
+max-width: 220px;
+font-weight: 600;
+padding: 12px;
+}
+#diagnostic-actions .button.ai-action {
+background: var(--success-color);
+color: white;
+}
+#diagnostic-actions .button.ai-action:hover:not(:disabled) {
+background: #3ee055;
+}
+.cpu-core-graph {
+display: flex;
+flex-direction: column;
+gap: 8px;
+}
+.core-bar-container {
+display: flex;
+align-items: center;
+gap: 10px;
+}
+.core-label {
+flex-basis: 50px;
+font-size: 0.8rem;
+color: var(--text-secondary);
+font-family: var(--font-mono);
+}
+.core-bar-wrapper {
+flex-grow: 1;
+background: rgba(0, 0, 0, 0.3);
+height: 12px;
+border-radius: 6px;
+overflow: hidden;
+box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
+}
+.core-bar {
+height: 100%;
+background: linear-gradient(90deg, #6a3093, var(--accent-color));
+transition: width 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+border-radius: 6px;
+position: relative;
+overflow: hidden;
+}
+.core-freq {
+flex-basis: 70px;
+font-family: var(--font-mono);
+font-size: 0.85rem;
+text-align: right;
+color: var(--text-primary);
+font-weight: 600;
+}
+.core-freq span {
+font-size: 0.8rem;
+color: var(--text-secondary);
+font-weight: 400;
+}
+.log-viewer-controls {
+display: flex;
+gap: 10px;
+margin-bottom: 15px;
+align-items: center;
+flex-shrink: 0;
+}
+#logSelector {
+flex-grow: 1;
+background-color: rgba(0, 0, 0, 0.2);
+border: 1px solid var(--panel-border);
+color: var(--text-primary);
+padding: 10px 15px;
+font-family: var(--font-main);
+font-size: 0.9rem;
+font-weight: 500;
+border-radius: 12px;
+cursor: pointer;
+-webkit-appearance: none;
+appearance: none;
+background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f5f5f7' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+background-repeat: no-repeat;
+background-position: right 15px center;
+background-size: 1em;
+transition: border-color 0.2s ease;
+}
+#logSelector:focus {
+outline: none;
+border-color: var(--accent-color);
+}
+#refreshLogBtn {
+flex-shrink: 0;
+}
+#logViewerContent {
+background: rgba(0, 0, 0, 0.2);
+border-radius: 12px;
+padding: 15px;
+white-space: pre-wrap;
+word-break: break-all;
+}
+/* --- 9. TOAST, ANIMATIONS & RESPONSIVE --- */
+.toast {
+position: fixed; bottom: 20px; left: 50%; transform: translate(-50%, 10px); padding: 12px 25px;
+font-weight: 600; z-index: 1000; opacity: 0; visibility: hidden;
+transition: all 0.4s cubic-bezier(0.21, 1.02, 0.73, 1); font-family: var(--font-main);
+border-radius: 12px; background: rgba(28, 28, 30, 0.8); border: 1px solid rgba(255, 255, 255, 0.2);
+backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); color: var(--text-primary);
+}
+.toast.visible { opacity: 1; visibility: visible; transform: translate(-50%, 0); }
+.toast--success { color: var(--success-color); }
+.toast--error { color: var(--danger-color); }
+.toast--pending { color: var(--accent-color); }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+@media (max-width: 1024px) {
+body { overflow: auto; -webkit-overflow-scrolling: touch; }
+.main-container { height: auto; padding: 15px; }
+.main-grid { grid-template-columns: 1fr; height: auto; gap: 15px; }
+.glass-panel.chat-panel,
+.glass-panel.log-panel {
+min-height: 350px;
+max-height: 65vh;
+border-radius: 16px;
+display: flex;
+flex-direction: column;
+}
+}
+.button.executing {
+cursor: wait;
+}
+.button .spinner {
+display: inline-block;
+width: 1em;
+height: 1em;
+border: 2px solid rgba(255, 255, 255, 0.3);
+border-radius: 50%;
+border-top-color: #fff;
+animation: spin 1s ease-in-out infinite;
+margin-right: 8px;
+vertical-align: middle;
+}
+@keyframes spin {
+to { transform: rotate(360deg); }
+}
+.button.success { background-color: rgba(50, 215, 75, 0.4); }
+.button.error { background-color: rgba(255, 69, 58, 0.4); }
+.button.is-vip {
+border-color: rgba(255, 215, 0, 0.6); }
+.button.is-vip:not(:disabled):hover {
+box-shadow: 0 0 15px rgba(255, 215, 0, 0.5),
+0 0 5px rgba(255, 215, 0, 0.8) inset;
+}
+.button.is-vip.disabled-feature {
+background-color: rgba(60, 50, 20, 0.3);
+color: #a98d3b;
+cursor: help;
+}
+.button.is-vip.disabled-feature::after {
+content: ' 👑';
+font-size: 0.9rem;
+}
+.info-tooltip {
+position: fixed;
+bottom: 20px;
+left: 50%;
+transform: translate(-50%, 10px);
+background: rgba(20, 20, 25, 0.9);
+border: 1px solid var(--panel-border);
+border-radius: 16px;
+padding: 15px 20px;
+width: 90%;
+max-width: 400px;
+z-index: 1001;
+opacity: 0;
+visibility: hidden;
+transition: all 0.4s cubic-bezier(0.21, 1.02, 0.73, 1);
+backdrop-filter: blur(10px);
+-webkit-backdrop-filter: blur(10px);
+will-change: transform, opacity;
+}
+.info-tooltip.visible {
+opacity: 1;
+visibility: visible;
+transform: translate(-50%, 0);
+}
+.info-tooltip strong {
+color: var(--accent-color);
+display: block;
+margin-bottom: 8px;
+}
+.info-tooltip p {
+margin: 0;
+font-size: 0.9rem;
+line-height: 1.6;
+color: var(--text-secondary);
+}
+/* --- STYLE HỆ THỐNG TAB --- */
+.tab-nav {
+    display: flex;
+    overflow-x: auto;
+    gap: 8px;
+    padding-bottom: 15px; /* Tạo khoảng trống bên dưới các nút tab */
+    border-bottom: 1px solid var(--panel-border);
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+
+.tab-nav::-webkit-scrollbar {
+  display: none; /* Ẩn thanh cuộn cho Chrome/Safari */
+}
+.tab-link {
+    flex-shrink: 0;
+    padding: 8px 16px;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 12px;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.tab-link:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+}
+.tab-link.active {
+    background: var(--accent-color);
+    color: white;
+}
+/* TÌM VÀ THAY THẾ TOÀN BỘ KHỐI NÀY */
+.tab-content {
+    /* Mặc định sẽ không chiếm không gian và bị ẩn đi */
+    max-height: 0;
+    overflow: hidden;
+    padding-top: 0;
+    padding-bottom: 0;
+    border: none; /* Tạm thời bỏ border để không bị lộ khi ẩn */
+    
+    /* Hiệu ứng chuyển động mượt mà khi hiện ra */
+    transition: max-height 0.5s ease-out, padding 0.5s ease-out;
+    
+    /* QUAN TRỌNG: Vẫn giữ cấu trúc layout bên trong */
+    display: block; 
+}
+
+/* Khi một tab được active */
+.tab-content.active {
+    /* Cho phép nó chiếm không gian cần thiết */
+    max-height: 1000vh; /* Một giá trị đủ lớn để chứa mọi nội dung */
+    
+    /* Khôi phục lại padding và border mặc định của glass-panel */
+    padding: 20px; 
+    border: 1px solid var(--panel-border);
+    
+    transition: max-height 0.5s ease-in, padding 0.5s ease-in;
+}
+.tab-nav-container {
+    padding-bottom: 0; /* Xóa padding đáy để dính vào nội dung */
+    margin-bottom: 20px; /* Dùng margin để tạo khoảng cách */
+}
+.tab-content-wrapper {
+    display: grid; /* Sử dụng Grid để xếp chồng */
+    grid-template-columns: 1fr;
+    margin-bottom: 20px; /* Giữ khoảng cách với panel bên dưới */
+}
+
+/* Các panel nội dung tab (QUAN TRỌNG) */
+.tab-content {
+    /* Khiến tất cả các panel chiếm cùng một ô trong grid -> xếp chồng lên nhau */
+    grid-column: 1 / -1;
+    grid-row: 1 / -1;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    
+    /* Hiệu ứng chuyển động mượt mà cho độ mờ */
+    transition: opacity 0.3s ease-out, visibility 0.3s;
+    
+    /* Bỏ margin của chính nó đi vì wrapper đã quản lý */
+    margin-bottom: 0;
+}
+/* Khi panel được active */
+.tab-content.active {
+    /* Hiện ra bằng cách làm rõ và cho phép tương tác */
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+/* --- STYLE WEB SHELL --- */
+#panel-shell { flex-grow: 1; }
+.shell-output {
+flex-grow: 1;
+background: rgba(0, 0, 0, 0.4);
+border-radius: 8px;
+padding: 10px;
+overflow-y: auto;
+font-family: var(--font-mono);
+font-size: 0.9rem;
+color: #f0f0f0;
+white-space: pre-wrap;
+word-break: break-all;
+}
+.shell-output p, .shell-output div { margin: 0 0 5px 0; }
+.shell-output .prompt-line { color: var(--text-secondary); }
+.shell-output .error-line { color: var(--danger-color); }
+.shell-input-area {
+display: flex;
+align-items: center;
+margin-top: 10px;
+background: rgba(0, 0, 0, 0.4);
+border-radius: 8px;
+padding: 5px 10px;
+border: 1px solid var(--panel-border);
+}
+.shell-prompt {
+font-family: var(--font-mono);
+color: var(--success-color);
+font-weight: bold;
+margin-right: 8px;
+}
+#shell-input {
+flex-grow: 1;
+background: none;
+border: none;
+outline: none;
+color: var(--text-primary);
+font-family: var(--font-mono);
+font-size: 1rem;
+flex-shrink: 1;
+min-width: 50px;
+}
+.shell-send-button {
+background: var(--accent-color);
+color: white;
+border: none;
+border-radius: 8px;
+padding: 8px 15px;
+margin-left: 10px;
+font-family: var(--font-main);
+font-weight: 600;
+font-size: 0.9rem;
+cursor: pointer;
+transition: background-color 0.2s ease, transform 0.1s ease;
+flex-shrink: 0;
+white-space: nowrap;
+}
+.shell-send-button:hover {
+background-color: #0077e6;
+}
+.shell-send-button:active {
+transform: scale(0.95);
+}
+/* --- STYLE TRỢ LÝ AI NỔI (FAB) --- */
+.fab-container {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 999;
+    display: flex;
+    align-items: flex-end;
+    flex-direction: column;
+    pointer-events: none;
+}
+.fab-container.open {
+    /* CHO PHÉP click vào tất cả mọi thứ bên trong container (bao gồm cả bong bóng và các nút) */
+    pointer-events: auto;
+}
+.fab-button {
+    background: var(--accent-color);
+    color: white;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.3s ease;
+    pointer-events: auto;
+}
+.fab-button:hover {
+    transform: scale(1.1);
+}
+.robot-icon {
+    width: 28px; height: 28px;
+    position: relative;
+}
+.head {
+    width: 100%; height: 70%;
+    background: white;
+    border-radius: 8px 8px 4px 4px;
+    position: relative;
+    animation: head-bob 3s infinite ease-in-out;
+}
+@keyframes head-bob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-2px); }
+}
+.eye {
+    position: absolute;
+    width: 6px; height: 6px;
+    background: var(--accent-color);
+    border-radius: 50%;
+    top: 8px;
+    animation: eye-blink 5s infinite;
+}
+.eye.left { left: 5px; }
+.eye.right { right: 5px; animation-delay: 0.2s; }
+@keyframes eye-blink {
+    0%, 90%, 100% { transform: scaleY(1); }
+    95% { transform: scaleY(0.1); }
+}
+.fab-container.loading .eye {
+    width: 100%; height: 3px; border-radius: 0;
+    top: 10px; left: 0;
+    animation: eye-scan 1.5s infinite linear;
+}
+@keyframes eye-scan {
+    0%, 100% { transform: translateX(-15px); opacity: 0; }
+    10%, 90% { transform: translateX(0); opacity: 1; }
+}
+.fab-bubble {
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 15px;
+    margin-bottom: 15px;
+    width: 250px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transform: translateY(10px) scale(0.9);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease-out;
+    transform-origin: bottom right;
+}
+.fab-container.open .fab-bubble {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+    visibility: visible;
+}
+#fab-suggestion-text {
+    margin: 0 0 15px 0;
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+.fab-action-button {
+    background: var(--success-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 12px;
+    width: 100%;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* ============================================= */
+/* --- BẮT ĐẦU: STYLE PHÒNG THÍ NGHIỆM COMBO (MỚI) --- */
+/* ============================================= */
+#combo-lab-panel .panel-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.combo-lab-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 15px;
+    min-height: 200px; /* Cho không gian để kéo thả */
+}
+.combo-column h3 {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin: 0 0 10px 0;
+    text-align: center;
+}
+.command-list {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    padding: 10px;
+    height: 250px; /* Chiều cao cố định */
+    overflow-y: auto;
+    border: 2px dashed transparent;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+.command-list::-webkit-scrollbar {
+    width: 6px;
+}
+.command-list::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+}
+
+.drop-zone.drag-over {
+    background-color: rgba(10, 132, 255, 0.2);
+    border-color: var(--accent-color);
+}
+.drop-hint {
+    color: var(--text-secondary);
+    text-align: center;
+    margin-top: 40px;
+    pointer-events: none; /* Quan trọng */
+}
+.combo-command-item {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+    padding: 10px 15px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    cursor: grab;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+    border: 1px solid var(--panel-border);
+}
+.combo-command-item:active {
+    cursor: grabbing;
+}
+.combo-command-item.dragging {
+    opacity: 0.5;
+}
+.combo-command-item .remove-btn {
+    background: none;
+    border: none;
+    color: var(--danger-color);
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 0 5px;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+}
+.combo-command-item .remove-btn:hover {
+    opacity: 1;
+}
+.combo-actions {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+#execute-combo-btn {
+    background-color: var(--success-color);
+    flex-grow: 1;
+}
+#execute-combo-btn:hover:not(:disabled) {
+    background-color: #3ee055;
+}
+#clear-combo-btn {
+    flex-grow: 0;
+}
+#combo-results-container h3 {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin: 0 0 10px 0;
+}
+#combo-results {
+    max-height: 150px; /* Giới hạn chiều cao kết quả */
+}
+/* ======================================================= */
+/* --- BẮT ĐẦU: STYLE LƯU/MỞ COMBO --- */
+/* ======================================================= */
+.combo-save-load-area {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px; /* Khoảng cách với nút Chạy */
+}
+
+#combo-name-input {
+    flex-grow: 1;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--panel-border);
+    color: var(--text-primary);
+    padding: 10px 15px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-family: var(--font-main);
+    transition: all 0.2s ease;
+}
+#combo-name-input:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    background: rgba(0,0,0,0.5);
+}
+#combo-name-input::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.8;
+}
+
+#save-combo-btn {
+    flex-shrink: 0;
+    background-color: var(--accent-color);
+}
+#save-combo-btn:hover:not(:disabled) {
+    background-color: #0077e6;
+}
+
+/* Panel các kịch bản đã lưu */
+#saved-combos-panel {
+    margin-top: 20px; /* Khoảng cách với panel combo lab */
+}
+
+.saved-combos-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.saved-combo-item {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--panel-border);
+    border-radius: 12px;
+    padding: 12px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background-color 0.2s ease;
+}
+.saved-combo-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.saved-combo-item-name {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+}
+
+.saved-combo-item-actions {
+    display: flex;
+    gap: 8px;
+}
+/* Tái sử dụng class button cho các nút nhỏ */
+.saved-combo-item-actions .button {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    min-height: auto;
+}
+/* ======================================================= */
+/* --- KẾT THÚC: STYLE LƯU/MỞ COMBO --- */
+/* ======================================================= */
+/* ============================================= */
+/* --- KẾT THÚC: STYLE PHÒNG THÍ NGHIỆM COMBO --- */
+/* ============================================= */

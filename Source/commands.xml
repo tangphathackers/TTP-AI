@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commandList>
+<!-- ======================================================= -->
+<!-- DANH MỤC: TỐI ƯU HÓA (OPTIMIZE)                        -->
+<!-- category="optimize"                                   -->
+<!-- ======================================================= -->
+<command alias="giamlag" vip="false" category="optimize" order="10" daemon="true">
+<name>Giảm Lag</name>
+<description>Chạy script Giamlag.sh để tối ưu hệ thống.</description>
+<type>script</type>
+</command>
+<command alias="boost" vip="false" category="optimize" order="20">
+<name>Tăng Hiệu Năng</name>
+<description>Chạy script Boost.sh cho các tác vụ nặng (yêu cầu VIP).</description>
+<type>script</type>
+</command>
+<command alias="muot" vip="false" category="optimize" order="30">
+<name>Làm Mượt</name>
+<description>Chạy script Muot.sh để tăng độ mượt giao diện.</description>
+<type>script</type>
+</command>
+<command alias="ram" vip="false" category="optimize" order="40">
+<name>Tối Ưu Đa Nhiệm</name>
+<description>Tối ưu hóa việc sử dụng RAM cho đa nhiệm tốt hơn.</description>
+<type>script</type>
+</command>
+<command alias="gpugl" vip="false" category="optimize" order="41">
+<name>Chuyển đổi dùng GPU Skia GL</name>
+<description>Tối ưu GPU.</description>
+<type>script</type>
+</command>
+<command alias="gpuvk" vip="false" category="optimize" order="42">
+<name>Chuyển đổi dùng GPU Skia VK</name>
+<description>Tối ưu GPU.</description>
+<type>script</type>
+</command>
+<!-- ======================================================= -->
+<!-- DANH MỤC: HIỆU CHỈNH (TWEAK)                           -->
+<!-- category="tweak"                                      -->
+<!-- ======================================================= -->
+<command alias="mediumtouch" vip="false" category="tweak" order="10">
+<name>Cảm Ứng Vừa</name>
+<description>Tinh chỉnh độ nhạy cảm ứng ở mức vừa phải.</description>
+<type>script</type>
+</command>
+<command alias="hightouch" vip="false" category="tweak" order="20">
+<name>Cảm Ứng Cao</name>
+<description>Tăng độ nhạy cảm ứng lên mức cao (yêu cầu VIP).</description>
+<type>script</type>
+</command>
+<command alias="lowdpi" vip="false" category="tweak" order="30">
+<name>Giảm DPI</name>
+<description>Giảm mật độ điểm ảnh để tăng hiệu năng.</description>
+<type>script</type>
+</command>
+<command alias="highdpi" vip="false" category="tweak" order="40">
+<name>Tăng DPI Nhẹ</name>
+<description>Tăng mật độ điểm ảnh cho hình ảnh sắc nét hơn (yêu cầu VIP).</description>
+<type>script</type>
+</command>
+<command alias="highdpi_2" vip="false" category="tweak" order="50">
+<name>Tăng DPI Mạnh Hơn (v2)</name>
+<description>Một phương pháp tăng DPI khác (yêu cầu VIP).</description>
+<type>script</type>
+</command>
+<command alias="gameboc" vip="false" category="tweak" order="60">
+<name>Tăng DPI Nhưng FOV Hẹp </name>
+<description>Một phương pháp tăng DPI khác (yêu cầu VIP).</description>
+<type>script</type>
+</command>
+<command alias="gamenhetam" vip="false" category="tweak" order="70">
+<name>Tăng DPI Nhưng FOV Rộng</name>
+<description>Một phương pháp tăng DPI khác (yêu cầu VIP).</description>
+<type>script</type>
+</command>
+<command alias="giam20" vip="false" category="tweak" order="71">
+<name>Giảm độ phân giải màn hình 20%</name>
+<description>Giảm lag đáng kể.</description>
+<type>script</type>
+</command>
+<command alias="fps90" vip="false" category="tweak" order="80">
+<name>90 FPS</name>
+<description>Mở khóa chế độ 90 FPS (yêu cầu VIP).</description>
+<type>script</type>
+</command>
+<command alias="fps120" vip="false" category="tweak" order="90">
+<name>120 FPS</name>
+<description>Mở khóa chế độ 120 FPS (yêu cầu VIP).</description>
+<type>script</type>
+</command>
+<command alias="cuongche" vip="false" category="auto" order="01" daemon="true">
+<name>Tự Động Tối Ưu Theo Thời Gian Thực</name>
+<description>Tự động chuyển đổi các chế độ gaming cân bằng và tiết kiệm. Lưu ý không dùng các bảo mật như màn hình và vân tay. Vì nó sẽ không cho hoạt động nền.</description>
+<type>script</type>
+</command>
+<command alias="fixnoti" vip="false" category="auto" order="10" daemon="true">
+<name>Tự Động Sửa Thông Báo</name>
+<description>Giảm thiểu mộ chút độ trễ thông báo.</description>
+<type>script</type>
+</command>
+<!-- DANH MỤC: trích)                            -->
+<command alias="blockads" vip="false" category="tips" order="10">
+<name>Tắt Quảng Cáo</name>
+<description>Tắt Quảng Cáo.</description>
+<type>script</type>
+</command>
+<command alias="okgoogle" vip="false" category="tips" order="11">
+<name>Bật Ok Google</name>
+<description>Bật Ok Google.</description>
+<type>script</type>
+</command>
+<command alias="notipopup" vip="false" category="tips" order="12">
+<name>Bật Thông Báo Nổi</name>
+<description>Bật Thông Báo Nổi.</description>
+<type>script</type>
+</command>
+
+<!-- ======================================================= -->
+<!-- DANH MỤC: HỆ THỐNG (SYSTEM)                            -->
+<!-- category="system"                                     -->
+<!-- ======================================================= -->
+<command alias="clear-all-cache" vip="false" category="system" order="10">
+<name>Dọn Cache Hệ Thống</name>
+<description>Xóa cache của tất cả ứng dụng (yêu cầu UID 2000, VIP).</description>
+<type>special</type>
+</command>
+
+
+<command alias="rdpi" vip="false" category="system" order="20">
+<name>Phục Hồi Dpi</name>
+<description>Phục hồi DPI.</description>
+<type>script</type>
+</command>
+<command alias="rtouch" vip="false" category="system" order="30">
+<name>Phục Hồi Cảm Ứng</name>
+<description>Phục hồi cảm ứng.</description>
+<type>script</type>
+</command>
+<command alias="rram" vip="false" category="system" order="31">
+<name>Phục Hồi Ram</name>
+<description>Phục hồi Ram.</description>
+<type>script</type>
+</command>
+<command alias="shutdown-server" vip="false" category="system" order="40">
+<name>Tắt Server</name>
+<description>Tắt hoàn toàn tiến trình server chạy nền để tiết kiệm pin.</description>
+<type>special</type>
+</command>
+<command alias="rblockads" vip="false" category="system" order="41">
+<name>Tắt Chặn Quảng Cáo</name>
+<description>Tắt Chặn QC.</description>
+<type>script</type>
+</command>
+<command alias="resetall" vip="false" category="system" order="50">
+<name>Khôi Phục Các Lệnh Module Tùm Lum</name>
+<description>Reset lại các thay đổi về mặc định (Lệnh Nguy Hiểm).</description>
+<type>script</type>
+</command>
+<command alias="reboot" vip="false" category="system" order="60">
+<name>Khởi Động Lại</name>
+<description>Khởi động lại thiết bị ngay lập tức (Lệnh Nguy Hiểm).</description>
+<type>script</type>
+</command>
+<!-- TRONG file Source/commands.xml, danh mục "Hệ thống" -->
+<!-- ======================================================= -->
+<!-- DANH MỤC: CÔNG CỤ CỤC BỘ (LOCAL TOOLS)                 -->
+<!-- category="local_tool"                                 -->
+<!-- ======================================================= -->
+<command alias="kernel-info" vip="false" category="local_tool">
+<name>Xem Kernel (Local)</name>
+<description>Chạy script kernel_info.sh từ máy cục bộ.</description>
+<type>local_script</type>
+<filename>kernel_info</filename>
+</command>
+<!-- DANH MỤC: TIỆN ÍCH ONLINE (ONLINE UTILITIES)           -->
+<!-- ======================================================= -->
+<command alias="goto-youtube" vip="false" category="online_utility">
+<name>Kênh YouTube</name>
+<description>Mở kênh YouTube chính thức của TTP-AI để xem hướng dẫn.</description>
+<type>redirect</type>
+<url>https://www.youtube.com/@TangPhat_Wisdomlikethesea</url>
+</command>
+<command alias="goto-zalo" vip="false" category="online_utility">
+<name>Nhóm Zalo</name>
+<description>Tham gia nhóm Zalo để được hỗ trợ và thảo luận.</description>
+<type>redirect</type>
+<url>https://zalo.me/g/ichtzt219</url>
+</command>
+<command alias="goto-tiktok" vip="true" category="online_utility">
+<name>Kênh TikTok</name>
+<description>Truy cập các khóa học nâng cao dành cho thành viên VIP.</description>
+<type>redirect</type>
+<url>https://www.tiktok.com/@ttp_ai</url>
+</command>
+<command alias="goto-truyen" vip="true" category="online_utility">
+<name>Kênh Truyện Tranh</name>
+<description>Truy cập các khóa học nâng cao dành cho thành viên VIP.</description>
+<type>redirect</type>
+<url>https://www.tiktok.com/@ttp_ai</url>
+</command>
+<command alias="goto-truyen" vip="true" category="online_utility">
+<name>Kênh Truyện Tranh</name>
+<description>Truyện tranh.</description>
+<type>redirect</type>
+<url>https://nettruyen1905.com/</url>
+</command>
+<!-- DANH MỤC: CÔNG CỤ NÂNG CAO (ADVANCED TOOLS)           -->
+<!-- ======================================================= -->
+<command
+alias="run-dynamic-script"
+vip="true"
+category="advanced_tool"
+order="10">
+<name>Chạy Script Động</name>
+<description>Thực thi một script từ link GitHub Raw (chỉ dành cho VIP).</description>
+<type>dynamic_script</type>
+<url>Dán URL Vào Nhớ Có Đuôi sh</url>
+</command>
+<!-- TRONG file Source/commands.xml -->
+
+<!-- TRONG file Source/commands.xml -->
+
+<command alias="update-all" vip="true" category="system" order="25">
+    <name>Cập Nhật Toàn Bộ</name>
+    <description>Tải và cài đặt phiên bản TTP-WEB mới nhất.</description>
+    <type>unzip_from_url</type>
+    <url>https://github.com/tangphathackers/TTP-AI/releases/download/v2.0.0/TTP-WEB.zip</url>
+    <dest>/sdcard/TTP-WEB/</dest>
+</command>
+
+<command alias="update-scripts-only" vip="false" category="system" order="30">
+    <name>Chỉ Cập Nhật Scripts</name>
+    <description>Tải và cài đặt lại bộ script gốc.</description>
+    <type>unzip_from_url</type> 
+    <url>https://github.com/tangphathackers/TTP-AI-WEB/archive/refs/heads/main.zip</url>
+    <dest>/sdcard/TTP-WEB/scripts/</dest>
+</command>
+</commandList>
