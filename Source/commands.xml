@@ -104,7 +104,7 @@
 <description>Tắt Quảng Cáo.</description>
 <type>script</type>
 </command>
-<command alias="okgoogle" vip="false" category="tips" order="11">
+<command alias="vgoogle" vip="false" category="tips" order="11">
 <name>Bật Ok Google</name>
 <description>Bật Ok Google.</description>
 <type>script</type>
