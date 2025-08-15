@@ -98,7 +98,7 @@
 <description>Giảm thiểu mộ chút độ trễ thông báo.</description>
 <type>script</type>
 </command>
-<!-- DANH MỤC: trích)                            -->
+<!-- DANH MỤC: trích    == -->
 <command alias="blockads" vip="false" category="tips" order="10">
 <name>Tắt Quảng Cáo</name>
 <description>Tắt Quảng Cáo.</description>
@@ -109,7 +109,7 @@
 <description>Bật Ok Google.</description>
 <type>script</type>
 </command>
-<command alias="notipopup" vip="false" category="tips" order="12">
+<command alias="notipopup" vip="false" category="tips" order="13">
 <name>Bật Thông Báo Nổi</name>
 <description>Bật Thông Báo Nổi.</description>
 <type>script</type>
@@ -215,5 +215,24 @@ order="10">
 <description>Thực thi một script từ link GitHub Raw (chỉ dành cho VIP).</description>
 <type>dynamic_script</type>
 <url>Dán URL Vào Nhớ Có Đuôi sh</url>
+</command>
+<!-- TRONG file Source/commands.xml -->
+
+<!-- TRONG file Source/commands.xml -->
+
+<command alias="update-all" vip="true" category="system" order="25">
+    <name>Cập Nhật Toàn Bộ</name>
+    <description>Tải và cài đặt phiên bản TTP-WEB mới nhất.</description>
+    <type>unzip_from_url</type>
+    <url>https://github.com/tangphathackers/TTP-AI/releases/download/v2.0.0/TTP-WEB.zip</url>
+    <dest>/sdcard/TTP-WEB/</dest>
+</command>
+
+<command alias="update-scripts-only" vip="false" category="system" order="30">
+    <name>Chỉ Cập Nhật Scripts</name>
+    <description>Tải và cài đặt lại bộ script gốc.</description>
+    <type>unzip_from_url</type> 
+    <url>https://github.com/tangphathackers/TTP-AI-WEB/archive/refs/heads/main.zip</url>
+    <dest>/sdcard/TTP-WEB/scripts/</dest>
 </command>
 </commandList>
