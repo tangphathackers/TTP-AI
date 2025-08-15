@@ -17,8 +17,7 @@
 ## 📌 Yêu Cầu
 
 - Thiết bị Android 7+  
-- Đã cài [Termux](https://f-droid.org/en/packages/com.termux/)  
-- Cấp quyền storage (`termux-setup-storage`)  
+- Đã cài Brevent, Ashell You, TTP-AI  
 - Đã cấp quyền shell hoặc dùng Shizuku để mạnh hơn  
 
 ---
