@@ -1,4 +1,4 @@
-// --- TTP-AI Interface v30.2
+// --- TTP-AI Interface v28.1 - Refactored & Complete ---
 // --- MODULES & IMPORTS ---
 import { initParticles } from './particles.js';
 // --- SECURE COMMUNICATIONS MODULE ---
@@ -27,7 +27,6 @@ exec: (cmd) => sendRequest('/ttp-ai-exec', { cmd }),
 chat: (prompt) => sendRequest('/chat-ai', { prompt }),
 getDeviceDetails: () => sendRequest('/get-device-details', {}),
 getCommands: () => sendRequest('/get-commands', {}),
-executeCombo: (aliases) => sendRequest('/execute-combo', { aliases }), // <-- HÀM MỚI
 };
 })();
 // --- GLOBAL REFERENCES & STATE ---
@@ -52,21 +51,16 @@ logViewerContent: document.getElementById('logViewerContent'),
 infoTooltip: document.getElementById('info-tooltip'),
 infoTooltipTitle: document.getElementById('info-tooltip-title'),
 infoTooltipDesc: document.getElementById('info-tooltip-desc'),
-// Combo Lab Refs (MỚI)
-availableCommandsList: document.getElementById('available-commands-list'),
-selectedCommandsList: document.getElementById('selected-commands-list'),
-executeComboBtn: document.getElementById('execute-combo-btn'),
-clearComboBtn: document.getElementById('clear-combo-btn'),
-comboResults: document.getElementById('combo-results'),
 };
 let commandCounter = 0;
-let infoTooltipTimeout;
-// --- CORE HELPER & UI FUNCTIONS ---
+let infoTooltipTimeout; // Biến để quản lý thời gian ẩn
+// --- CORE HELPER & UI FUNCTIONS (ĐỊNH NGHĨA TRƯỚC) ---
 const showInfoTooltip = (title, description) => {
-clearTimeout(infoTooltipTimeout);
+clearTimeout(infoTooltipTimeout); // Xóa timeout cũ nếu có
 refs.infoTooltipTitle.textContent = title;
 refs.infoTooltipDesc.textContent = description;
 refs.infoTooltip.classList.add('visible');
+// Tự động ẩn sau 5 giây
 infoTooltipTimeout = setTimeout(() => {
 refs.infoTooltip.classList.remove('visible');
 }, 5000);
@@ -93,11 +87,13 @@ buttonElement.innerHTML = `<span class="spinner"></span> Đang xử lý...`;
 buttonElement.classList.add('executing');
 try {
 const result = await SecureComms.exec(cmd);
+// --- NÂNG CẤP: KIỂM TRA HÀNH ĐỘNG "REDIRECT" ---
 if (result && result.action === 'redirect' && result.url) {
+// Nếu server yêu cầu chuyển hướng, mở tab mới
 window.open(result.url, '_blank');
 buttonElement.innerHTML = `✅ Đã mở!`;
 buttonElement.classList.replace('executing', 'success');
-return;
+return; // Kết thúc hàm ở đây
 }
 logCommand(friendlyName, result);
 if (result.errno === 0) {
@@ -132,20 +128,25 @@ buttonElement.classList.remove('executing', 'success', 'error');
 }
 }
 };
+// TÌM VÀ THAY THẾ TOÀN BỘ HÀM populateDynamicUI TRONG script.js
 const populateDynamicUI = async () => {
 try {
+// Bước 1: Lấy dữ liệu
 const allCommands = await SecureComms.getCommands();
 const keyInfo = JSON.parse(localStorage.getItem('ttp_key_info') || '{}');
 const allowedFeatures = keyInfo.allowedFeatures || [];
 if (!Array.isArray(allCommands)) {
 throw new Error("Dữ liệu lệnh nhận từ server không hợp lệ.");
 }
+// Bước 2: Tạo các "công trường ảo" (DocumentFragment) một cách động
+// Kỹ thuật này tự động tạo ra fragment cho bất kỳ category nào có trong XML
 const containers = {};
 allCommands.forEach(command => {
 if (command.category && !containers[command.category]) {
 containers[command.category] = document.createDocumentFragment();
 }
 });
+// Bước 3: "Xây dựng" các nút bấm trong các "công trường ảo"
 allCommands.forEach(command => {
 const containerFragment = containers[command.category];
 if (!containerFragment) return;
@@ -172,12 +173,15 @@ button.addEventListener('mouseup', endPress);
 button.addEventListener('mouseleave', endPress);
 button.addEventListener('touchstart', startPress, { passive: true });
 button.addEventListener('touchend', endPress);
+// === LOGIC ĐIỀU PHỐI SỰ KIỆN CLICK MỚI ===
 button.addEventListener('click', () => {
+// Xử lý cảnh báo cho các lệnh nguy hiểm
 if (command.alias === 'resetall' || command.alias === 'reboot') {
 if (!confirm(`Hành động "${command.name}" có thể gây nguy hiểm. Bạn có chắc chắn?`)) {
 return;
 }
 }
+// Phân loại và thực thi dựa trên `type` từ server
 switch (command.type) {
 case 'dynamic_script':
 const scriptURL = prompt("Nhập link raw GitHub của script bạn muốn chạy:", command.url);
@@ -191,7 +195,7 @@ window.open(command.url, '_blank');
 button.innerHTML = `✅ Đã mở!`;
 setTimeout(() => { button.innerHTML = command.name; }, 2000);
 break;
-default:
+default: // Bao gồm 'script', 'special', 'local_script'
 executeCommand(`remote-alias:${command.alias}`, command.name, button);
 break;
 }
@@ -206,6 +210,7 @@ button.addEventListener('click', () => showInfoTooltip("Tính Năng Bị Khóa",
 }
 containerFragment.appendChild(button);
 });
+// Bước 4: "Lắp ghép" vào giao diện thật
 for (const category in containers) {
 const realContainer = document.getElementById(`category-${category}`);
 if (realContainer) {
@@ -221,49 +226,44 @@ alert("Không thể tải danh sách tính năng từ server. Vui lòng thử l�
 const fetchDeviceInfo = async () => {
 try {
 const details = await SecureComms.getDeviceDetails();
+// Xây dựng chuỗi HTML
 let deviceInfoHTML = `<b>Thiết bị:</b> ${details["ro.product.manufacturer"]} ${details["ro.product.model"]}`;
 deviceInfoHTML += `<br><b>Phiên bản Android:</b> ${details["ro.build.version.release"]} (SDK ${details["ro.build.version.sdk"]})`;
 deviceInfoHTML += `<br><b>Kiến trúc CPU:</b> ${details["ro.product.cpu.abi"]}`;
+// --- NÂNG CẤP: Thêm dòng hiển thị Android ID ---
+// Kiểm tra xem `details` có chứa key "android_id" không
 if (details["android_id"]) {
 deviceInfoHTML += `<br><b>Android ID:</b> ${details["android_id"]}`;
 }
+// --- KẾT THÚC NÂNG CẤP ---
+// Mật độ điểm ảnh có thể để cuối cùng hoặc không cần thiết tùy bạn
 deviceInfoHTML += `<br><b>Mật độ điểm ảnh:</b> ${details["ro.sf.lcd_density"]} DPI`;
+// Cập nhật giao diện
 refs.deviceInfoDiv.innerHTML = deviceInfoHTML;
 } catch (e) {
 refs.deviceInfoDiv.textContent = 'Lỗi khi tải thông tin thiết bị.';
 }
 };
-// TÌM VÀ THAY THẾ HÀM NÀY
 const updateSystemStats = async () => {
-    try {
-        const command = "dumpsys battery | grep -E 'level|temperature'";
-        const result = await SecureComms.exec(command);
-        if (result.errno !== 0) throw new Error(result.stderr || "Lệnh dumpsys thất bại");
-        
-        let batteryLevel = 'N/A', temp = 'N/A';
-        const lines = result.stdout.trim().split('\n');
-        
-        lines.forEach(line => {
-            const parts = line.split(':');
-            if (parts.length < 2) return;
-            
-            const key = parts[0].trim();
-            const value = parts[1]?.trim(); // <-- SỬA Ở ĐÂY
-            
-            if (key === 'level') {
-                batteryLevel = value;
-            } else if (key === 'temperature' && value) { // Thêm kiểm tra 'value' tồn tại
-                temp = (parseInt(value, 10) / 10).toFixed(1);
-            }
-        });
-
-        refs.batteryInfoDiv.innerHTML = `<div class="label">PIN</div><div class="value">${batteryLevel}%</div>`;
-        refs.tempInfoDiv.innerHTML = `<div class="label">NHIỆT ĐỘ</div><div class="value">${temp}°C</div>`;
-    } catch (e) {
-        console.error("Lỗi cập nhật thông số:", e);
-        refs.batteryInfoDiv.innerHTML = `<div class="label">PIN</div><div class="value">Lỗi</div>`;
-        refs.tempInfoDiv.innerHTML = `<div class="label">NHIỆT ĐỘ</div><div class="value">Lỗi</div>`;
-    }
+try {
+const command = "dumpsys battery | grep -E 'level|temperature'";
+const result = await SecureComms.exec(command);
+if (result.errno !== 0) throw new Error(result.stderr || "Lệnh dumpsys thất bại");
+let batteryLevel = 'N/A', temp = 'N/A';
+const lines = result.stdout.trim().split('\n');
+lines.forEach(line => {
+const parts = line.split(':'); if (parts.length < 2) return;
+const key = parts[0].trim(), value = parts[1].trim();
+if (key === 'level') batteryLevel = value;
+else if (key === 'temperature') temp = (parseInt(value, 10) / 10).toFixed(1);
+});
+refs.batteryInfoDiv.innerHTML = `<div class="label">PIN</div><div class="value">${batteryLevel}%</div>`;
+refs.tempInfoDiv.innerHTML = `<div class="label">NHIỆT ĐỘ</div><div class="value">${temp}°C</div>`;
+} catch (e) {
+console.error("Lỗi cập nhật thông số:", e);
+refs.batteryInfoDiv.innerHTML = `<div class="label">PIN</div><div class="value">Lỗi</div>`;
+refs.tempInfoDiv.innerHTML = `<div class="label">NHIỆT ĐỘ</div><div class="value">Lỗi</div>`;
+}
 };
 const updateCpuGraph = async () => {
 try {
@@ -299,130 +299,85 @@ freqText.innerHTML = `${currentMHz} <span>MHz</span>`;
 }
 }
 } catch(e) {
-console.error("Lỗi cập nhật CPU:", e);
+console.error("Lỗi cập nhật CPU (có thể do quyền truy cập file):", e);
 if (refs.cpuCoreGraphDiv.innerHTML === '') {
 refs.cpuCoreGraphDiv.innerHTML = '<p style="font-size: 0.8em; color: var(--text-secondary); text-align: center;">Không thể đọc thông tin CPU.</p>';
 }
 }
 };
-// TÌM VÀ THAY THẾ HÀM NÀY
-// TÌM VÀ THAY THẾ LẠI TOÀN BỘ HÀM NÀY ĐỂ ĐỒNG BỘ
 const runDiagnostics = async () => {
-    refs.runDiagnosticsBtn.textContent = 'ĐANG PHÂN TÍCH...';
-    refs.runDiagnosticsBtn.disabled = true;
-    refs.suggestionContent.style.display = 'none';
-    refs.diagnosticActions.querySelector('.button.ai-action')?.remove();
-    try {
-        const tempResult = await SecureComms.exec("dumpsys battery | grep temperature");
-        const memResult = await SecureComms.exec('cat /proc/meminfo | grep MemTotal');
-        
-        // === SỬA LỖI TƯƠNG TỰ Ở ĐÂY ===
-        const tempValue = tempResult.stdout.split(':')[1]?.trim();
-        const temp = tempValue ? (parseInt(tempValue, 10) / 10).toFixed(1) : 'không rõ';
-
-        const memValue = memResult.stdout.trim().split(/\s+/)[1];
-        const memGb = memValue ? (parseInt(memValue, 10) / 1024 / 1024).toFixed(1) : 'không rõ';
-        // === KẾT THÚC SỬA LỖI ===
-
-        const availableCommands = JSON.stringify(["giamlag", "boost", "muot", "ram", "none"]);
-        const prompt = `Bạn đang trò chuyện với TTP-AI – chuyên gia tối ưu điện thoại với chỉ số IQ 3000. Dữ liệu hệ thống: nhiệt độ ${temp}°C, RAM ${memGb}GB. Phân tích và trả lời BẮT BUỘC chỉ bằng một chuỗi JSON hợp lệ, KHÔNG bao gồm markdown ticks (\\\`\\\`\\\`). JSON phải có 2 key: "suggestion" (lời khuyên Tiếng Việt ngắn gọn, dưới 50 từ) và "command_alias" (chọn MỘT lệnh phù hợp nhất từ danh sách sau: ${availableCommands}). Nếu hệ thống đã ổn, trả về "none". Hãy thêm chút hài hước của tuổi teen để làm người dùng bật cười, hoặc một chút kinh dị. Thêm lời chúc của TTP-AI gửi đến họ theo thời gian thực. Code ví dụ: {"suggestion": "Nhiệt độ hơi cao, hãy thử giảm lag.", "command_alias": "giamlag"}. Nhiệt độ thấp chạy "boost"`;
-        
-        const aiResponse = await SecureComms.chat(prompt);
-        let aiReplyText = aiResponse.reply;
-        let parsedData;
-        if (aiReplyText.startsWith("```json")) aiReplyText = aiReplyText.replace(/^```json\s*|```$/g, "").trim();
-        try { parsedData = JSON.parse(aiReplyText); }
-        catch (e) { parsedData = { suggestion: aiReplyText, command_alias: 'none' }; }
-        
-        refs.initialMessage.style.display = 'none';
-        refs.suggestionContent.textContent = parsedData.suggestion || "AI không đưa ra lời khuyên.";
-        refs.suggestionContent.style.display = 'block';
-
-        if (parsedData.command_alias && parsedData.command_alias !== 'none') {
-            const commandMap = { giamlag: 'Chạy Giảm Lag', boost: 'Chạy Tăng Tốc', muot: 'Chạy Làm Mượt', ram: 'Tối Ưu RAM' };
-            const friendlyName = commandMap[parsedData.command_alias];
-            if (friendlyName) {
-                const actionButton = document.createElement('button');
-                actionButton.className = 'button ai-action';
-                actionButton.textContent = friendlyName;
-                actionButton.addEventListener('click', () => executeCommand(`remote-alias:${parsedData.command_alias}`, friendlyName, actionButton));
-                refs.diagnosticActions.appendChild(actionButton);
-            }
-        }
-    } catch (e) {
-        refs.suggestionContent.textContent = `Lỗi chẩn đoán: ${e.message}`;
-        refs.suggestionContent.style.display = 'block';
-    } finally {
-        refs.runDiagnosticsBtn.textContent = 'Chạy Lại Chẩn Đoán';
-        refs.runDiagnosticsBtn.disabled = false;
-    }
+refs.runDiagnosticsBtn.textContent = 'ĐANG PHÂN TÍCH...';
+refs.runDiagnosticsBtn.disabled = true;
+refs.suggestionContent.style.display = 'none';
+refs.diagnosticActions.querySelector('.button.ai-action')?.remove();
+try {
+const tempResult = await SecureComms.exec("dumpsys battery | grep temperature");
+const memResult = await SecureComms.exec('cat /proc/meminfo | grep MemTotal');
+const temp = (parseInt(tempResult.stdout.split(':')[1].trim(), 10) / 10).toFixed(1);
+const memGb = (parseInt(memResult.stdout.trim().split(/\s+/)[1], 10) / 1024 / 1024).toFixed(1);
+const availableCommands = JSON.stringify(["giamlag", "boost", "muot", "ram", "none"]);
+const prompt = `Bạn đang trò chuyện với TTP-AI – chuyên gia tối ưu điện thoại với chỉ số IQ 3000. Dữ liệu hệ thống: nhiệt độ ${temp}°C, RAM ${memGb}GB. Phân tích và trả lời BẮT BUỘC chỉ bằng một chuỗi JSON hợp lệ, KHÔNG bao gồm markdown ticks (\\\`\\\`\\\`). JSON phải có 2 key: "suggestion" (lời khuyên Tiếng Việt ngắn gọn, dưới 50 từ) và "command_alias" (chọn MỘT lệnh phù hợp nhất từ danh sách sau: ${availableCommands}). Nếu hệ thống đã ổn, trả về "none". Hãy thêm chút hài hước của tuổi teen để làm người dùng bật cười, hoặc một chút kinh dị. Thêm lời chúc của TTP-AI gửi đến họ theo thời gian thực. Code ví dụ: {"suggestion": "Nhiệt độ hơi cao, hãy thử giảm lag.", "command_alias": "giamlag"}. Nhiệt độ thấp chạy "boost"`;
+const aiResponse = await SecureComms.chat(prompt);
+let aiReplyText = aiResponse.reply;
+let parsedData;
+if (aiReplyText.startsWith("```json")) aiReplyText = aiReplyText.replace(/^```json\s*|```$/g, "").trim();
+try { parsedData = JSON.parse(aiReplyText); }
+catch (e) { parsedData = { suggestion: aiReplyText, command_alias: 'none' }; }
+refs.initialMessage.style.display = 'none';
+refs.suggestionContent.textContent = parsedData.suggestion || "AI không đưa ra lời khuyên.";
+refs.suggestionContent.style.display = 'block';
+if (parsedData.command_alias && parsedData.command_alias !== 'none') {
+const commandMap = { giamlag: 'Chạy Giảm Lag', boost: 'Chạy Tăng Tốc', muot: 'Chạy Làm Mượt', ram: 'Tối Ưu RAM' };
+const friendlyName = commandMap[parsedData.command_alias];
+if (friendlyName) {
+const actionButton = document.createElement('button');
+actionButton.className = 'button ai-action';
+actionButton.textContent = friendlyName;
+actionButton.addEventListener('click', () => executeCommand(`remote-alias:${parsedData.command_alias}`, friendlyName, actionButton));
+refs.diagnosticActions.appendChild(actionButton);
+}
+}
+} catch (e) {
+refs.suggestionContent.textContent = `Lỗi chẩn đoán: ${e.message}`;
+refs.suggestionContent.style.display = 'block';
+} finally {
+refs.runDiagnosticsBtn.textContent = 'Chạy Lại Chẩn Đoán';
+refs.runDiagnosticsBtn.disabled = false;
+}
 };
-// TÌM VÀ THAY THẾ TOÀN BỘ HÀM NÀY
 const setupLogViewer = () => {
-    // Nếu các phần tử không tồn tại, thoát sớm để tránh lỗi
-    if (!refs.logSelector || !refs.refreshLogBtn || !refs.logViewerContent) {
-        return;
-    }
-    
-    // --- Hàm cốt lõi để tải nội dung log ---
-    // Nó nhận tên log cần tải làm tham số
-    const loadLogContent = async (logName) => {
-        if (!logName) {
-            refs.logViewerContent.innerHTML = '<p>Chưa chọn log nào để xem.</p>';
-            return;
-        }
-
-        refs.logViewerContent.textContent = 'Đang tải log...';
-        // Vô hiệu hóa cả hai nút trong khi tải để tránh người dùng nhấn liên tục
-        refs.refreshLogBtn.disabled = true;
-        refs.logSelector.disabled = true;
-
-        try {
-            const result = await SecureComms.exec(`tail -n 100 /sdcard/TTP-WEB/logs/${logName}.log`);
-            
-            if (result.errno === 0 && result.stdout) {
-                // Sử dụng textContent để tránh các vấn đề XSS và hiển thị đúng các ký tự đặc biệt
-                refs.logViewerContent.textContent = result.stdout;
-            } else if (result.stderr && !result.stderr.includes("No such file")) {
-                refs.logViewerContent.textContent = `Lỗi khi đọc file log:\n${result.stderr}`;
-            } else {
-                refs.logViewerContent.textContent = 'File log trống hoặc chưa được tạo.';
-            }
-        } catch (error) {
-            refs.logViewerContent.textContent = `Lỗi nghiêm trọng khi tải log: ${error.message}`;
-        } finally {
-            // Kích hoạt lại cả hai nút sau khi tải xong
-            refs.refreshLogBtn.disabled = false;
-            refs.logSelector.disabled = false;
-        }
-    };
-
-    // --- Gán sự kiện ---
-
-    // 1. Sự kiện cho menu dropdown
-    refs.logSelector.addEventListener('change', () => {
-        // Khi người dùng thay đổi lựa chọn, lấy giá trị mới và gọi hàm tải log
-        const selectedLog = refs.logSelector.value;
-        loadLogContent(selectedLog);
-    });
-
-    // 2. Sự kiện cho nút "Làm mới"
-    refs.refreshLogBtn.addEventListener('click', () => {
-        // Khi người dùng nhấn nút, lấy giá trị HIỆN TẠI của dropdown và gọi hàm tải log
-        const selectedLog = refs.logSelector.value;
-        loadLogContent(selectedLog);
-    });
-
-    // --- Khởi tạo ban đầu ---
-
-    // Tạo danh sách các log có thể xem
-    const daemonScripts = ['cuongche', 'giamlag', 'fixnoti']; // Cập nhật danh sách nếu cần
-    daemonScripts.forEach(scriptName => {
-        const option = document.createElement('option');
-        option.value = scriptName;
-        option.textContent = `Log: ${scriptName}.sh`;
-        refs.logSelector.appendChild(option);
-    });
+const daemonScripts = ['cuongche', 'giamlag'];
+daemonScripts.forEach(scriptName => {
+const option = document.createElement('option');
+option.value = scriptName;
+option.textContent = `Log: ${scriptName}.sh`;
+refs.logSelector.appendChild(option);
+});
+const loadLogContent = async () => {
+const selectedLog = refs.logSelector.value;
+if (!selectedLog) {
+refs.logViewerContent.innerHTML = '<p>Chưa chọn log nào để xem.</p>';
+return;
+}
+refs.logViewerContent.textContent = 'Đang tải log...';
+refs.refreshLogBtn.disabled = true;
+try {
+const result = await SecureComms.exec(`tail -n 100 /sdcard/TTP-WEB/logs/${selectedLog}.log`);
+if (result.errno === 0 && result.stdout) {
+refs.logViewerContent.textContent = result.stdout;
+} else if (result.stderr && !result.stderr.includes("No such file")) {
+refs.logViewerContent.textContent = `Lỗi khi đọc file log:\n${result.stderr}`;
+} else {
+refs.logViewerContent.textContent = 'File log trống hoặc chưa được tạo.';
+}
+} catch (error) {
+refs.logViewerContent.textContent = `Lỗi nghiêm trọng khi tải log: ${error.message}`;
+} finally {
+refs.refreshLogBtn.disabled = false;
+}
+};
+refs.refreshLogBtn.addEventListener('click', loadLogContent);
+refs.logSelector.addEventListener('change', loadLogContent);
 };
 const setupChat = () => {
 const addMessageToChat = (text, senderClass) => {
@@ -459,58 +414,70 @@ refs.chatInput.addEventListener('keyup', e => {
 if (e.key === 'Enter') sendChatMessage();
 });
 };
-// TÌM VÀ THAY THẾ TOÀN BỘ HÀM NÀY
-// TÌM VÀ THAY THẾ LẠI TOÀN BỘ HÀM NÀY
+// TÌM VÀ THAY THẾ HÀM setupTabs
 const setupTabs = () => {
-    const tabLinks = document.querySelectorAll('.tab-link');
-    
-    tabLinks.forEach(link => {
-        link.addEventListener('click', () => {
-            if (link.classList.contains('active')) {
-                return; // Không làm gì nếu đã active
-            }
-
-            // Lấy ID của panel mục tiêu từ thuộc tính data-tab
-            const panelId = link.getAttribute('data-tab');
-            const targetPanel = document.getElementById(panelId);
-
-            // Tắt active ở tất cả các link khác
-            tabLinks.forEach(item => {
-                item.classList.remove('active');
-            });
-
-            // Tắt active ở tất cả các panel nội dung tab khác
-            document.querySelectorAll('.tab-content.glass-panel').forEach(panel => {
-                panel.classList.remove('active');
-            });
-            
-            // Bật active cho link và panel được chọn
-            link.classList.add('active');
-            if (targetPanel) {
-                targetPanel.classList.add('active');
-            }
-
-            // Cuộn thanh tab để nút được chọn vào giữa
-            link.scrollIntoView({
-                behavior: 'smooth',
-                block: 'nearest',
-                inline: 'center'
-            });
-        });
-    });
+const tabLinks = document.querySelectorAll('.tab-link');
+// Bây giờ các panel chính là nội dung của tab
+const tabContents = document.querySelectorAll('.tab-content.glass-panel');
+tabLinks.forEach(link => {
+link.addEventListener('click', () => {
+if (link.classList.contains('active')) return;
+// data-tab bây giờ trỏ đến ID của panel, ví dụ "panel-optimize"
+const panelId = link.getAttribute('data-tab');
+tabLinks.forEach(item => item.classList.remove('active'));
+tabContents.forEach(item => item.classList.remove('active'));
+link.classList.add('active');
+const activePanel = document.getElementById(panelId);
+if (activePanel) {
+activePanel.classList.add('active');
+}
+link.scrollIntoView({
+behavior: 'smooth',
+block: 'nearest',
+inline: 'center'
+});
+});
+});
 };
+const setupScrollingTabs = () => {
+const nav = document.querySelector('.tab-nav');
+if (!nav) return;
+const container = document.querySelector('.main-tabs-container');
+const updateFades = () => {
+// Kiểm tra xem có thể cuộn được không
+const isScrollable = nav.scrollWidth > nav.clientWidth;
+if (isScrollable) {
+container.classList.add('is-scrollable'); // Thêm một class để CSS biết
+} else {
+container.classList.remove('is-scrollable');
+}
+};
+// Gắn sự kiện để cập nhật khi có thay đổi
+nav.addEventListener('scroll', updateFades);
+window.addEventListener('resize', updateFades);
+// Chạy lần đầu
+// Dùng setTimeout để đảm bảo các nút đã được render xong
+setTimeout(updateFades, 500);
+};
+// Thêm hàm này vào khu vực CORE FUNCTIONS trong script.js
+// TÌM VÀ THAY THẾ TOÀN BỘ HÀM setupWebShell TRONG script.js
 const setupWebShell = () => {
+// Lấy các tham chiếu đến các phần tử HTML
 const shellInput = document.getElementById('shell-input');
 const shellOutput = document.getElementById('shell-output');
 const shellPrompt = document.querySelector('.shell-prompt');
 const shellSendBtn = document.getElementById('shell-send-btn');
+// Nếu một trong các phần tử không tồn tại, thoát để tránh lỗi
 if (!shellInput || !shellOutput || !shellPrompt || !shellSendBtn) return;
-const commandHistory = [];
-let historyIndex = -1;
+// State (Trạng thái) của Web Shell
+const commandHistory = []; // Mảng để lưu lịch sử lệnh
+let historyIndex = -1;     // Vị trí hiện tại trong lịch sử
+// Hàm tiện ích để in văn bản ra màn hình terminal
 const printToShell = (text, type = 'output') => {
 const line = document.createElement('div');
 if (type === 'prompt') {
 line.className = 'prompt-line';
+// Tái tạo lại dòng lệnh đã gõ
 line.innerHTML = `<span style="color: var(--success-color);">${shellPrompt.textContent}</span> ${text}`;
 } else if (type === 'error') {
 line.className = 'error-line';
@@ -519,20 +486,25 @@ line.textContent = text;
 line.textContent = text;
 }
 shellOutput.appendChild(line);
+// Luôn tự động cuộn xuống dòng mới nhất
 shellOutput.scrollTop = shellOutput.scrollHeight;
 };
+// Hàm cốt lõi để thực thi một lệnh
 const executeShellCommand = async () => {
 const command = shellInput.value.trim();
-shellInput.value = '';
-shellInput.focus();
-if (!command) return;
-printToShell(command, 'prompt');
+shellInput.value = ''; // Xóa nội dung ô input
+shellInput.focus(); // Tự động focus lại vào ô input cho lệnh tiếp theo
+if (!command) return; // Không làm gì nếu người dùng chỉ nhấn Enter
+printToShell(command, 'prompt'); // In lại lệnh đã gõ
+// Lưu vào lịch sử và reset con trỏ lịch sử
 if (commandHistory[commandHistory.length - 1] !== command) {
 commandHistory.push(command);
 }
 historyIndex = commandHistory.length;
 try {
+// Gửi lệnh đến server để thực thi
 const result = await SecureComms.exec(command);
+// In kết quả ra màn hình
 if (result.stdout) {
 printToShell(result.stdout, 'output');
 }
@@ -543,370 +515,52 @@ printToShell(result.stderr, 'error');
 printToShell(`Lỗi giao tiếp: ${error.message}`, 'error');
 }
 };
+// Gán sự kiện cho ô nhập liệu (bàn phím)
 shellInput.addEventListener('keydown', (e) => {
 if (e.key === 'Enter') {
-e.preventDefault();
+e.preventDefault(); // Ngăn hành vi mặc định (như submit form)
 executeShellCommand();
 } else if (e.key === 'ArrowUp') {
 e.preventDefault();
+// Duyệt lùi trong lịch sử
 if (historyIndex > 0) {
 historyIndex--;
 shellInput.value = commandHistory[historyIndex];
 }
 } else if (e.key === 'ArrowDown') {
 e.preventDefault();
+// Duyệt tiến trong lịch sử
 if (historyIndex < commandHistory.length - 1) {
 historyIndex++;
 shellInput.value = commandHistory[historyIndex];
 } else {
+// Nếu đang ở cuối, xóa ô input
 historyIndex = commandHistory.length;
 shellInput.value = '';
 }
 }
 });
+// Gán sự kiện cho nút "Gửi"
 shellSendBtn.addEventListener('click', executeShellCommand);
 };
-// TÌM VÀ THAY THẾ HÀM NÀY
-// TÌM VÀ THAY THẾ LẠI TOÀN BỘ HÀM NÀY
-// TÌM VÀ THAY THẾ TOÀN BỘ HÀM NÀY
-const setupFab = () => {
-    const fabContainer = document.getElementById('fab-container');
-    const fabMainBtn = document.getElementById('fab-main-btn');
-    const fabBubble = document.getElementById('fab-bubble');
-    const suggestionText = document.getElementById('fab-suggestion-text');
-    const actionBtn = document.getElementById('fab-action-btn');
-
-    if (!fabContainer || !fabMainBtn || !fabBubble || !actionBtn) return;
-
-    let isRunning = false;
-    let currentCommandAlias = null;
-    let currentFriendlyName = null;
-
-    // Hàm thực thi hành động của FAB
-    const handleFabAction = () => {
-        if (currentCommandAlias && currentFriendlyName) {
-            // Gọi executeCommand với các thông tin đã lưu
-            executeCommand(`remote-alias:${currentCommandAlias}`, currentFriendlyName, actionBtn);
-            // Đóng bong bóng sau khi nhấn
-            fabContainer.classList.remove('open');
-        }
-    };
-
-    // Gán sự kiện cho nút hành động MỘT LẦN DUY NHẤT
-    actionBtn.addEventListener('click', handleFabAction);
-
-    // Hàm chính để chạy chẩn đoán
-    const runAIDiagnostics = async () => {
-        if (isRunning) return;
-        isRunning = true;
-        // Reset các lệnh cũ trước khi chạy
-        currentCommandAlias = null;
-        currentFriendlyName = null;
-
-        fabContainer.classList.add('loading');
-        fabContainer.classList.remove('open');
-        showToast("AI đang phân tích hệ thống...", "pending");
-
-        try {
-            const tempResult = await SecureComms.exec("dumpsys battery | grep temperature");
-            const memResult = await SecureComms.exec('cat /proc/meminfo | grep MemTotal');
-            
-            const tempValue = tempResult.stdout.split(':')[1]?.trim(); 
-            const temp = tempValue ? (parseInt(tempValue, 10) / 10).toFixed(1) : 'không rõ';
-
-            const memValue = memResult.stdout.trim().split(/\s+/)[1];
-            const memGb = memValue ? (parseInt(memValue, 10) / 1024 / 1024).toFixed(1) : 'không rõ';
-
-            const availableCommands = JSON.stringify(["giamlag", "boost", "muot", "ram", "none"]);
-            const prompt = `Bạn đang trò chuyện với TTP-AI – chuyên gia tối ưu điện thoại với chỉ số IQ 3000. Dữ liệu hệ thống: nhiệt độ ${temp}°C, RAM ${memGb}GB. Phân tích và trả lời BẮT BUỘC chỉ bằng một chuỗi JSON hợp lệ, KHÔNG bao gồm markdown ticks (\\\`\\\`\\\`). JSON phải có 2 key: "suggestion" (lời khuyên Tiếng Việt ngắn gọn, dưới 50 từ) và "command_alias" (chọn MỘT lệnh phù hợp nhất từ danh sách sau: ${availableCommands}). Nếu hệ thống đã ổn, trả về "none". Hãy thêm chút hài hước của tuổi teen để làm người dùng bật cười, hoặc một chút kinh dị. Thêm lời chúc của TTP-AI gửi đến họ theo thời gian thực. Code ví dụ: {"suggestion": "Nhiệt độ hơi cao, hãy thử giảm lag.", "command_alias": "giamlag"}. Nhiệt độ thấp chạy "boost"`;
-            
-            const aiResponse = await SecureComms.chat(prompt);
-            let parsedData;
-            try { 
-                const cleanResponse = aiResponse.reply.replace(/```json|```/g, "").trim();
-                parsedData = JSON.parse(cleanResponse); 
-            } catch (e) {
-                parsedData = { suggestion: aiResponse.reply, command_alias: 'none' }; 
-            }
-            
-            suggestionText.textContent = parsedData.suggestion || "Hệ thống ổn định.";
-            
-            if (parsedData.command_alias && parsedData.command_alias !== 'none') {
-                const commandMap = { giamlag: 'Chạy Giảm Lag', boost: 'Chạy Tăng Tốc', muot: 'Chạy Làm Mượt', ram: 'Tối Ưu RAM' };
-                const friendlyName = commandMap[parsedData.command_alias];
-                
-                if(friendlyName){
-                    // Chỉ cập nhật thông tin và giao diện, không gán lại sự kiện
-                    actionBtn.textContent = friendlyName;
-                    actionBtn.style.display = 'block';
-                    currentCommandAlias = parsedData.command_alias;
-                    currentFriendlyName = friendlyName;
-                } else {
-                     actionBtn.style.display = 'none';
-                }
-            } else {
-                actionBtn.style.display = 'none';
-            }
-            
-            fabContainer.classList.add('open');
-
-        } catch (error) {
-            showToast(`Lỗi AI: ${error.message}`, 'error');
-        } finally {
-            isRunning = false;
-            fabContainer.classList.remove('loading');
-        }
-    };
-
-    fabMainBtn.addEventListener('click', runAIDiagnostics);
-
-    document.addEventListener('click', (e) => {
-        // Chỉ đóng nếu click ra ngoài cả container (bao gồm cả nút và bong bóng)
-        if (!fabContainer.contains(e.target)) {
-            fabContainer.classList.remove('open');
-        }
-    });
-};
-
-// ======================================================= //
-// --- BẮT ĐẦU: LOGIC PHÒNG THÍ NGHIỆM COMBO (MỚI) --- //
-// ======================================================= //
-// TÌM VÀ THAY THẾ TOÀN BỘ HÀM NÀY - PHIÊN BẢN CUỐI CÙNG
-const setupComboLab = async () => {
-    // === PHẦN 1: LẤY DỮ LIỆU VÀ CÁC THAM CHIẾU ===
-    const allCommands = await SecureComms.getCommands();
-    const comboCompatibleCommands = allCommands.filter(cmd => cmd.type === 'script' && cmd.alias);
-    
-    const comboNameInput = document.getElementById('combo-name-input');
-    const saveComboBtn = document.getElementById('save-combo-btn');
-    const savedCombosList = document.getElementById('saved-combos-list');
-
-    // === PHẦN 2: CÁC HÀM QUẢN LÝ DỮ LIỆU (VỚI CƠ CHẾ TỰ SỬA LỖI) ===
-    
-    // Hàm render (vẽ) lại danh sách các combo đã lưu
-    const renderSavedCombos = () => {
-        let combos = JSON.parse(localStorage.getItem('ttp_combos') || '{}');
-
-        // === TỰ SỬA LỖI QUAN TRỌNG ===
-        // Nếu dữ liệu bị hỏng (là một mảng), hãy reset nó về đối tượng rỗng
-        if (Array.isArray(combos)) {
-            console.error("Phát hiện dữ liệu combo bị hỏng (định dạng Array). Đang reset.");
-            combos = {};
-            localStorage.setItem('ttp_combos', JSON.stringify(combos)); // Ghi lại cấu trúc đúng
-        }
-        // === KẾT THÚC TỰ SỬA LỖI ===
-
-        savedCombosList.innerHTML = ''; 
-
-        const comboEntries = Object.entries(combos);
-
-        if (comboEntries.length === 0) {
-            savedCombosList.innerHTML = '<p class="drop-hint">Chưa có kịch bản nào được lưu.</p>';
-            return;
-        }
-
-        comboEntries.forEach(([name, aliases]) => {
-            const item = document.createElement('div');
-            item.className = 'saved-combo-item';
-            item.innerHTML = `
-                <span class="saved-combo-item-name">${name}</span>
-                <div class="saved-combo-item-actions">
-                    <button class="button load-btn">Tải</button>
-                    <button class="button button-danger delete-btn">Xóa</button>
-                </div>
-            `;
-            
-            item.querySelector('.load-btn').addEventListener('click', () => loadCombo(name, aliases));
-            item.querySelector('.delete-btn').addEventListener('click', () => deleteCombo(name));
-
-            savedCombosList.appendChild(item);
-        });
-    };
-
-    // Hàm lưu một combo mới hoặc cập nhật combo đã có
-    const saveCombo = () => {
-        const name = comboNameInput.value.trim();
-        if (!name) {
-            showToast("Vui lòng đặt tên cho kịch bản!", 'error');
-            return;
-        }
-
-        const selectedItems = refs.selectedCommandsList.querySelectorAll('.combo-command-item');
-        if (selectedItems.length === 0) {
-            showToast("Kịch bản rỗng, không thể lưu!", 'error');
-            return;
-        }
-
-        let combos = JSON.parse(localStorage.getItem('ttp_combos') || '{}');
-        // Tự sửa lỗi tương tự ở đây để đảm bảo an toàn tuyệt đối
-        if (Array.isArray(combos)) {
-            combos = {};
-        }
-
-        const aliases = Array.from(selectedItems).map(item => item.dataset.alias);
-        
-        if (combos[name] && !confirm(`Kịch bản "${name}" đã tồn tại. Bạn muốn ghi đè?`)) {
-            return;
-        }
-
-        combos[name] = aliases;
-        localStorage.setItem('ttp_combos', JSON.stringify(combos));
-        showToast(`Đã lưu kịch bản "${name}"!`, 'success');
-        renderSavedCombos(); // Cập nhật lại danh sách hiển thị
-    };
-
-    // Hàm tải một combo vào khu vực "Kịch Bản Hiện Tại"
-    const loadCombo = (name, aliases) => {
-        refs.selectedCommandsList.innerHTML = ''; 
-        comboNameInput.value = name; 
-
-        aliases.forEach(alias => {
-            const command = comboCompatibleCommands.find(c => c.alias === alias);
-            if (command) {
-                const clone = document.createElement('div');
-                clone.className = 'combo-command-item';
-                clone.textContent = command.name;
-                clone.dataset.alias = command.alias;
-                
-                const removeBtn = document.createElement('button');
-                removeBtn.className = 'remove-btn';
-                removeBtn.innerHTML = '&times;';
-                removeBtn.onclick = () => clone.remove();
-                clone.appendChild(removeBtn);
-                
-                refs.selectedCommandsList.appendChild(clone);
-            }
-        });
-        showToast(`Đã tải kịch bản "${name}".`, 'pending');
-        const hint = refs.selectedCommandsList.querySelector('.drop-hint');
-        if(hint) hint.style.display = 'none';
-    };
-
-    // Hàm xóa một combo
-    const deleteCombo = (name) => {
-        if (!confirm(`Bạn có chắc muốn xóa vĩnh viễn kịch bản "${name}"?`)) {
-            return;
-        }
-        let combos = JSON.parse(localStorage.getItem('ttp_combos') || '{}');
-        if (Array.isArray(combos)) { combos = {}; } // Chống lỗi
-        
-        delete combos[name];
-        localStorage.setItem('ttp_combos', JSON.stringify(combos));
-        showToast(`Đã xóa kịch bản "${name}".`, 'success');
-        renderSavedCombos();
-    };
-
-    // === PHẦN 3: KHỞI TẠO VÀ GÁN SỰ KIỆN (Không đổi) ===
-    refs.availableCommandsList.innerHTML = ''; 
-    comboCompatibleCommands.forEach(cmd => {
-        const item = document.createElement('div');
-        item.className = 'combo-command-item';
-        item.textContent = cmd.name;
-        item.dataset.alias = cmd.alias;
-        item.draggable = true;
-        refs.availableCommandsList.appendChild(item);
-    });
-
-    let draggedItem = null;
-    refs.availableCommandsList.addEventListener('dragstart', (e) => {
-        if (e.target.classList.contains('combo-command-item')) {
-            draggedItem = e.target;
-            setTimeout(() => e.target.classList.add('dragging'), 0);
-        }
-    });
-    document.addEventListener('dragend', () => {
-        draggedItem?.classList.remove('dragging');
-        draggedItem = null;
-    });
-    const dropZone = refs.selectedCommandsList;
-    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
-    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
-    dropZone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        dropZone.classList.remove('drag-over');
-        if (draggedItem) {
-            const hint = dropZone.querySelector('.drop-hint');
-            if(hint) hint.style.display = 'none';
-            const clone = draggedItem.cloneNode(true);
-            clone.draggable = false;
-            clone.classList.remove('dragging');
-            const removeBtn = document.createElement('button');
-            removeBtn.className = 'remove-btn';
-            removeBtn.innerHTML = '&times;';
-            removeBtn.onclick = () => clone.remove();
-            clone.appendChild(removeBtn);
-            dropZone.appendChild(clone);
-        }
-    });
-    
-    saveComboBtn.addEventListener('click', saveCombo);
-    
-    refs.clearComboBtn.addEventListener('click', () => {
-        refs.selectedCommandsList.innerHTML = '<p class="drop-hint">Thả lệnh vào đây</p>';
-        refs.comboResults.innerHTML = '<p>Kết quả sẽ hiển thị ở đây.</p>';
-        comboNameInput.value = '';
-    });
-
-    refs.executeComboBtn.addEventListener('click', async () => {
-        const selectedItems = refs.selectedCommandsList.querySelectorAll('.combo-command-item');
-        if (selectedItems.length === 0) {
-            showToast("Vui lòng thêm lệnh vào kịch bản!", 'error');
-            return;
-        }
-        const aliasesToRun = Array.from(selectedItems).map(item => item.dataset.alias);
-        showToast(`Bắt đầu chạy kịch bản...`, 'pending');
-        refs.executeComboBtn.disabled = true;
-        refs.executeComboBtn.innerHTML = `<span class="spinner"></span> Đang chạy...`;
-        refs.comboResults.innerHTML = '';
-        try {
-            const results = await SecureComms.executeCombo(aliasesToRun);
-            results.forEach((result) => {
-                const timestamp = new Date().toLocaleTimeString('vi-VN');
-                const statusClass = result.success ? 'status-success' : 'status-error';
-                const statusText = result.success ? 'OK' : 'LỖI';
-                const logEntry = `<div class="log-entry"><span class="timestamp">[${timestamp}]</span><span class="status ${statusClass}">${statusText}</span><span class="cmd-name">${result.alias}: ${result.output || (result.success ? "Hoàn thành." : "Thất bại.")}</span></div>`;
-                refs.comboResults.insertAdjacentHTML('beforeend', logEntry);
-            });
-            showToast("Kịch bản đã thực thi xong!", 'success');
-        } catch (error) {
-            showToast(`Lỗi thực thi: ${error.message}`, 'error');
-            refs.comboResults.innerHTML = `<div class="log-entry"><span class="status status-error">LỖI GIAO TIẾP</span><span class="cmd-name">${error.message}</span></div>`;
-        } finally {
-            refs.executeComboBtn.disabled = false;
-            refs.executeComboBtn.innerHTML = '🚀 Chạy Kịch Bản';
-        }
-    });
-
-    // === PHẦN 4: CHẠY LẦN ĐẦU TIÊN ===
-    renderSavedCombos();
-};
-
-// ======================================================= //
-// --- KẾT THÚC: LOGIC PHÒNG THÍ NGHIỆM COMBO --- //
-// ======================================================= //
-
 // --- APPLICATION LAUNCH ---
 document.addEventListener('DOMContentLoaded', async () => {
 if (!localStorage.getItem('ttp_key_info')) {
 window.location.href = '/';
 return;
 }
-console.log("✅ Phiên hợp lệ. Bắt đầu tải giao diện.");
+console.log("✅ Phiên hợp lệ. Bắt đầu tải giao diện động.");
 const keyInfo = JSON.parse(localStorage.getItem('ttp_key_info') || '{}');
 refs.keyInfoDiv.innerHTML = `Chào mừng, <strong>${keyInfo.name || 'User'}</strong>!<br><span>HSD Key: ${keyInfo.expiry || 'N/A'}</span>`;
-
-// Gán sự kiện cho các thành phần tĩnh
+// Gán sự kiện cho các thành phần không động
 refs.runDiagnosticsBtn.addEventListener('click', runDiagnostics);
-
-// Khởi tạo các module
 setupChat();
 setupLogViewer();
 setupWebShell();
-await populateDynamicUI(); // Tải các nút lệnh
+// Tải và "vẽ" các nút bấm động
+await populateDynamicUI();
 setupTabs();
-setupFab();
-await setupComboLab(); // <-- KHỞI TẠO MODULE MỚI
-
+setupScrollingTabs();
 // Khởi chạy các tác vụ nền
 fetchDeviceInfo();
 updateSystemStats();
