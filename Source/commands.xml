@@ -98,18 +98,18 @@
 <description>Giảm thiểu mộ chút độ trễ thông báo.</description>
 <type>script</type>
 </command>
-<!-- DANH MỤC: trích -->
+<!-- DANH MỤC: trích    == -->
 <command alias="blockads" vip="false" category="tips" order="10">
 <name>Tắt Quảng Cáo</name>
 <description>Tắt Quảng Cáo.</description>
 <type>script</type>
 </command>
-<command alias="vgoogle" vip="false" category="tips" order="11">
+<command alias="okgoogle" vip="false" category="tips" order="11">
 <name>Bật Ok Google</name>
-<description>Bật Ok Google.</description>
+<description>Ok Google.</description>
 <type>script</type>
 </command>
-<command alias="notipopup" vip="false" category="tips" order="12">
+<command alias="notipopup" vip="false" category="tips" order="13">
 <name>Bật Thông Báo Nổi</name>
 <description>Bật Thông Báo Nổi.</description>
 <type>script</type>
