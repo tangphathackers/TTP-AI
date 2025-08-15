@@ -98,7 +98,7 @@
 <description>Giảm thiểu mộ chút độ trễ thông báo.</description>
 <type>script</type>
 </command>
-<!-- DANH MỤC: trích)                            -->
+<!-- DANH MỤC: trích -->
 <command alias="blockads" vip="false" category="tips" order="10">
 <name>Tắt Quảng Cáo</name>
 <description>Tắt Quảng Cáo.</description>
