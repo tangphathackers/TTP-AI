@@ -132,90 +132,99 @@ buttonElement.classList.remove('executing', 'success', 'error');
 }
 }
 };
+// TÌM HÀM populateDynamicUI VÀ THAY THẾ TOÀN BỘ NỘI DUNG CỦA NÓ
+
 const populateDynamicUI = async () => {
-try {
-const allCommands = await SecureComms.getCommands();
-const keyInfo = JSON.parse(localStorage.getItem('ttp_key_info') || '{}');
-const allowedFeatures = keyInfo.allowedFeatures || [];
-if (!Array.isArray(allCommands)) {
-throw new Error("Dữ liệu lệnh nhận từ server không hợp lệ.");
-}
-const containers = {};
-allCommands.forEach(command => {
-if (command.category && !containers[command.category]) {
-containers[command.category] = document.createDocumentFragment();
-}
-});
-allCommands.forEach(command => {
-const containerFragment = containers[command.category];
-if (!containerFragment) return;
-const button = document.createElement('button');
-button.id = `ttp-${command.alias}`;
-button.className = 'button';
-button.textContent = command.name;
-if (command.alias === 'resetall' || command.alias === 'reboot') {
-button.classList.add('button-danger');
-}
-if (command.isVip) {
-button.classList.add('is-vip');
-}
-const isAllowed = allowedFeatures.includes(command.alias);
-if (isAllowed) {
-let pressTimer;
-const startPress = (e) => {
-e.preventDefault();
-pressTimer = setTimeout(() => showInfoTooltip(command.name, command.description), 700);
-};
-const endPress = () => clearTimeout(pressTimer);
-button.addEventListener('mousedown', startPress);
-button.addEventListener('mouseup', endPress);
-button.addEventListener('mouseleave', endPress);
-button.addEventListener('touchstart', startPress, { passive: true });
-button.addEventListener('touchend', endPress);
-button.addEventListener('click', () => {
-if (command.alias === 'resetall' || command.alias === 'reboot') {
-if (!confirm(`Hành động "${command.name}" có thể gây nguy hiểm. Bạn có chắc chắn?`)) {
-return;
-}
-}
-switch (command.type) {
-case 'dynamic_script':
-const scriptURL = prompt("Nhập link raw GitHub của script bạn muốn chạy:", command.url);
-if (scriptURL) {
-const cmd = `dynamic-run ${scriptURL}`;
-executeCommand(cmd, `Chạy Động: ${scriptURL.split('/').pop()}`, button);
-}
-break;
-case 'redirect':
-window.open(command.url, '_blank');
-button.innerHTML = `✅ Đã mở!`;
-setTimeout(() => { button.innerHTML = command.name; }, 2000);
-break;
-default:
-executeCommand(`remote-alias:${command.alias}`, command.name, button);
-break;
-}
-});
-} else {
-button.disabled = true;
-button.classList.add('disabled-feature');
-const reason = command.isVip
-? 'Tính năng này yêu cầu Key VIP. Hãy nâng cấp!'
-: 'Bạn không có quyền truy cập tính năng này.';
-button.addEventListener('click', () => showInfoTooltip("Tính Năng Bị Khóa", reason));
-}
-containerFragment.appendChild(button);
-});
-for (const category in containers) {
-const realContainer = document.getElementById(`category-${category}`);
-if (realContainer) {
-realContainer.appendChild(containers[category]);
-}
-}
-} catch (e) {
-console.error("Lỗi nghiêm trọng khi tải danh sách lệnh:", e);
-alert("Không thể tải danh sách tính năng từ server. Vui lòng thử lại.");
-}
+    try {
+        const allCommands = await SecureComms.getCommands();
+        const keyInfo = JSON.parse(localStorage.getItem('ttp_key_info') || '{}');
+        const allowedFeatures = keyInfo.allowedFeatures || [];
+        if (!Array.isArray(allCommands)) {
+            throw new Error("Dữ liệu lệnh nhận từ server không hợp lệ.");
+        }
+        
+        const containers = {};
+        allCommands.forEach(command => {
+            if (command.category && !containers[command.category]) {
+                containers[command.category] = document.createDocumentFragment();
+            }
+        });
+
+        allCommands.forEach(command => {
+            const containerFragment = containers[command.category];
+            if (!containerFragment) return;
+
+            const button = document.createElement('button');
+            button.id = `ttp-${command.alias}`;
+            button.className = 'button';
+            button.textContent = command.name;
+
+            if (command.alias === 'resetall' || command.alias === 'reboot') {
+                button.classList.add('button-danger');
+            }
+            if (command.isVip) {
+                button.classList.add('is-vip');
+            }
+
+            const isAllowed = allowedFeatures.includes(command.alias);
+            if (isAllowed) {
+                // --- LOGIC SỰ KIỆN ĐÃ ĐƯỢC ĐƠN GIẢN HÓA ---
+                let pressTimer;
+                
+                // Chỉ gán sự kiện press-and-hold cho chuột trên máy tính
+                const startPress = () => {
+                    pressTimer = setTimeout(() => showInfoTooltip(command.name, command.description), 700);
+                };
+                const endPress = () => clearTimeout(pressTimer);
+                
+                button.addEventListener('mousedown', startPress);
+                button.addEventListener('mouseup', endPress);
+                button.addEventListener('mouseleave', endPress);
+                
+                // Gán sự kiện click chính
+                button.addEventListener('click', () => {
+                    if (command.alias === 'resetall' || command.alias === 'reboot') {
+                        if (!confirm(`Hành động "${command.name}" có thể gây nguy hiểm. Bạn có chắc chắn?`)) {
+                            return;
+                        }
+                    }
+                    switch (command.type) {
+                        case 'dynamic_script':
+                            const scriptURL = prompt("Nhập link raw GitHub của script bạn muốn chạy:", command.url);
+                            if (scriptURL) {
+                                const cmd = `dynamic-run ${scriptURL}`;
+                                executeCommand(cmd, `Chạy Động: ${scriptURL.split('/').pop()}`, button);
+                            }
+                            break;
+                        case 'redirect':
+                            window.open(command.url, '_blank');
+                            button.innerHTML = `✅ Đã mở!`;
+                            setTimeout(() => { button.innerHTML = command.name; }, 2000);
+                            break;
+                        default:
+                            executeCommand(`remote-alias:${command.alias}`, command.name, button);
+                            break;
+                    }
+                });
+            } else {
+                button.disabled = true;
+                button.classList.add('disabled-feature');
+                const reason = command.isVip ? 'Tính năng này yêu cầu Key VIP.' : 'Bạn không có quyền truy cập tính năng này.';
+                button.addEventListener('click', () => showInfoTooltip("Tính Năng Bị Khóa", reason));
+            }
+            containerFragment.appendChild(button);
+        });
+
+        for (const category in containers) {
+            const realContainer = document.getElementById(`category-${category}`);
+            if (realContainer) {
+                realContainer.appendChild(containers[category]);
+            }
+        }
+    } catch (e) {
+        console.error("Lỗi nghiêm trọng khi tải danh sách lệnh:", e);
+        alert("Không thể tải danh sách tính năng từ server. Vui lòng thử lại.");
+    }
 };
 // --- SYSTEM MONITORING & OTHER FEATURES ---
 const fetchDeviceInfo = async () => {
@@ -815,37 +824,63 @@ const setupComboLab = async () => {
     });
 
     let draggedItem = null;
+    // Sự kiện khi bắt đầu kéo một item từ danh sách nguồn
     refs.availableCommandsList.addEventListener('dragstart', (e) => {
         if (e.target.classList.contains('combo-command-item')) {
             draggedItem = e.target;
+            // Dùng dataTransfer để lưu trữ dữ liệu, một thực hành tốt
+            e.dataTransfer.setData('text/plain', e.target.dataset.alias);
             setTimeout(() => e.target.classList.add('dragging'), 0);
         }
     });
+    // Sự kiện khi kết thúc việc kéo (dù thành công hay không)
     document.addEventListener('dragend', () => {
-        draggedItem?.classList.remove('dragging');
-        draggedItem = null;
-    });
-    const dropZone = refs.selectedCommandsList;
-    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
-    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
-    dropZone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        dropZone.classList.remove('drag-over');
         if (draggedItem) {
+            draggedItem.classList.remove('dragging');
+            draggedItem = null;
+        }
+    });
+    // --- LOGIC CỦA VÙNG THẢ (DROP ZONE) ---
+    const dropZone = refs.selectedCommandsList;
+
+    // Sự kiện khi một item được kéo VÀO ranh giới của vùng thả
+    dropZone.addEventListener('dragenter', (e) => {
+        e.preventDefault(); // Cho phép thả
+        dropZone.classList.add('drag-over');
+    });
+
+    // Sự kiện khi một item được kéo TRÊN vùng thả
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault(); // Rất quan trọng: Phải gọi ở đây để cho phép thả!
+    });
+    
+    // Sự kiện khi một item được kéo RA KHỎI ranh giới của vùng thả
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('drag-over');
+    });
+
+    // Sự kiện khi một item được THẢ vào vùng thả
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault(); // Ngăn hành vi mặc định (ví dụ: mở file)
+        dropZone.classList.remove('drag-over');
+        
+        if (draggedItem) { // Đảm bảo chúng ta có một item đang được kéo
             const hint = dropZone.querySelector('.drop-hint');
             if(hint) hint.style.display = 'none';
-            const clone = draggedItem.cloneNode(true);
+            
+    const clone = draggedItem.cloneNode(true);
             clone.draggable = false;
             clone.classList.remove('dragging');
+
             const removeBtn = document.createElement('button');
             removeBtn.className = 'remove-btn';
             removeBtn.innerHTML = '&times;';
             removeBtn.onclick = () => clone.remove();
             clone.appendChild(removeBtn);
+
             dropZone.appendChild(clone);
         }
     });
-    
     saveComboBtn.addEventListener('click', saveCombo);
     
     refs.clearComboBtn.addEventListener('click', () => {
