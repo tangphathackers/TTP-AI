@@ -98,6 +98,11 @@
 <description>Giảm thiểu mộ chút độ trễ thông báo.</description>
 <type>script</type>
 </command>
+<command alias="fixnotilife" vip="true" category="auto" order="11" daemon="true">
+<name>Tự Động Sửa Thông Báo Lite</name>
+<description>Giảm thiểu mộ chút độ trễ thông báo.</description>
+<type>script</type>
+</command>
 <!-- DANH MỤC: trích    == -->
 <command alias="blockads" vip="true" category="tips" order="10">
 <name>Tắt Quảng Cáo</name>

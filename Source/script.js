@@ -432,7 +432,7 @@ const setupLogViewer = () => {
     // --- Khởi tạo ban đầu ---
 
     // Tạo danh sách các log có thể xem
-    const daemonScripts = ['cuongche', 'giamlag', 'fixnoti', 'okgoogle']; // Cập nhật danh sách nếu cần
+    const daemonScripts = ['cuongche', 'giamlag', 'fixnoti', 'okgoogle', 'fixnotilife']; // Cập nhật danh sách nếu cần
     daemonScripts.forEach(scriptName => {
         const option = document.createElement('option');
         option.value = scriptName;
