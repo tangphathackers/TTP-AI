@@ -119,6 +119,11 @@
 <description>Bật Thông Báo Nổi.</description>
 <type>script</type>
 </command>
+<command alias="internet" vip="true" category="tips" order="14">
+<name>Tăng tốc mạng và wifi</name>
+<description>Tăng tốc mạng và wifi.</description>
+<type>script</type>
+</command>
 
 <!-- ======================================================= -->
 <!-- DANH MỤC: HỆ THỐNG (SYSTEM)                            -->
