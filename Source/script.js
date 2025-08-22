@@ -62,27 +62,14 @@ comboResults: document.getElementById('combo-results'),
 let commandCounter = 0;
 let infoTooltipTimeout;
 // --- CORE HELPER & UI FUNCTIONS ---
-// Đảm bảo hàm showInfoTooltip của bạn giống như phiên bản này
 const showInfoTooltip = (title, description) => {
-    // Thoát sớm nếu không tìm thấy phần tử tooltip
-    if (!refs.infoTooltip || !refs.infoTooltipTitle || !refs.infoTooltipDesc) {
-        console.error("Các phần tử Tooltip không được tìm thấy trong DOM.");
-        return;
-    }
-
-    clearTimeout(infoTooltipTimeout);
-
-    const finalTitle = title || "Thông tin lệnh";
-    const finalDescription = description || "Lệnh này hiện chưa có mô tả chi tiết.";
-
-    refs.infoTooltipTitle.textContent = finalTitle;
-    refs.infoTooltipDesc.textContent = finalDescription;
-
-    refs.infoTooltip.classList.add('visible');
-
-    infoTooltipTimeout = setTimeout(() => {
-        refs.infoTooltip.classList.remove('visible');
-    }, 5000);
+clearTimeout(infoTooltipTimeout);
+refs.infoTooltipTitle.textContent = title;
+refs.infoTooltipDesc.textContent = description;
+refs.infoTooltip.classList.add('visible');
+infoTooltipTimeout = setTimeout(() => {
+refs.infoTooltip.classList.remove('visible');
+}, 5000);
 };
 const showToast = (message, type = 'pending', duration = 3000) => {
 refs.outputToast.textContent = message;
@@ -940,35 +927,50 @@ const setupComboLab = async () => {
 // --- KẾT THÚC: LOGIC PHÒNG THÍ NGHIỆM COMBO --- //
 // ======================================================= //
 
-// --- APPLICATION LAUNCH ---
-document.addEventListener('DOMContentLoaded', async () => {
-if (!localStorage.getItem('ttp_key_info')) {
-window.location.href = '/';
-return;
-}
-console.log("✅ Phiên hợp lệ. Bắt đầu tải giao diện.");
-const keyInfo = JSON.parse(localStorage.getItem('ttp_key_info') || '{}');
-refs.keyInfoDiv.innerHTML = `Chào mừng, <strong>${keyInfo.name || 'User'}</strong>!<br><span>HSD Key: ${keyInfo.expiry || 'N/A'}</span>`;
 
-// Gán sự kiện cho các thành phần tĩnh
-refs.runDiagnosticsBtn.addEventListener('click', runDiagnostics);
 
-// Khởi tạo các module
-setupChat();
-setupLogViewer();
-setupWebShell();
-await populateDynamicUI(); // Tải các nút lệnh
-setupTabs();
-setupFab();
-await setupComboLab(); // <-- KHỞI TẠO MODULE MỚI
 
-// Khởi chạy các tác vụ nền
-fetchDeviceInfo();
-updateSystemStats();
-updateCpuGraph();
-initParticles('particleCanvas', 'rgba(0, 255, 255, 0.5)', 'rgba(0, 255, 255, 0.1)');
-setInterval(() => {
-updateSystemStats();
-updateCpuGraph();
-}, 5000);
+
+// THAY THẾ BẰNG KHỐI NÀY
+
+// --- APPLICATION LAUNCH (PHIÊN BẢN AN TOÀN HƠN) ---
+// Sử dụng sự kiện 'load' thay vì 'DOMContentLoaded'
+// 'load' sẽ chỉ kích hoạt sau khi TẤT CẢ tài nguyên (CSS, images, etc.) đã được tải xong.
+window.addEventListener('load', async () => {
+    if (!localStorage.getItem('ttp_key_info')) {
+        window.location.href = '/';
+        return;
+    }
+    console.log("✅ Phiên hợp lệ. Tất cả tài nguyên đã tải. Bắt đầu khởi tạo giao diện.");
+
+    const keyInfo = JSON.parse(localStorage.getItem('ttp_key_info') || '{}');
+    refs.keyInfoDiv.innerHTML = `Chào mừng, <strong>${keyInfo.name || 'User'}</strong>!<br><span>HSD Key: ${keyInfo.expiry || 'N/A'}</span>`;
+
+    // Gán sự kiện cho các thành phần tĩnh
+    refs.runDiagnosticsBtn.addEventListener('click', runDiagnostics);
+
+    // Khởi tạo các module
+    setupChat();
+    setupLogViewer();
+    setupWebShell();
+    
+    // Chờ cho đến khi các nút được "vẽ" xong
+    await populateDynamicUI(); 
+    
+    // Chỉ sau khi các nút đã ở đúng vị trí, chúng ta mới chạy các hàm thiết lập khác
+    setupTabs();
+    setupFab();
+    await setupComboLab();
+
+    // Khởi chạy các tác vụ nền
+    fetchDeviceInfo();
+    updateSystemStats();
+    updateCpuGraph();
+    initParticles('particleCanvas', 'rgba(0, 255, 255, 0.5)', 'rgba(0, 255, 255, 0.1)');
+    
+    // setInterval vẫn an toàn để đặt ở đây
+    setInterval(() => {
+        updateSystemStats();
+        updateCpuGraph();
+    }, 5000);
 });
