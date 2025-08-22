@@ -130,19 +130,33 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   const redirectToDashboard = () => {
-    const base =
-      activeBase ||
-      (location.origin && location.origin.startsWith("http")
-        ? location.origin
-        : "http://127.0.0.1:8080");
-    const url = base.replace(/\/+$/, "") + "/dashboard";
-    try {
-      window.location.replace(url);
-    } catch {}
-    setTimeout(() => {
-      window.location.href = url;
-    }, 500);
-  };
+  const base =
+    activeBase ||
+    (location.origin && location.origin.startsWith("http")
+      ? location.origin
+      : "http://127.0.0.1:8080");
+  const url = base.replace(/\/+$/, "") + "/dashboard";
+
+  // tạo lớp overlay đen
+  const overlay = document.createElement("div");
+  overlay.style.position = "fixed";
+  overlay.style.top = 0;
+  overlay.style.left = 0;
+  overlay.style.width = "100%";
+  overlay.style.height = "100%";
+  overlay.style.background = "#000";
+  overlay.style.opacity = 0;
+  overlay.style.zIndex = 9999;
+  overlay.style.transition = "opacity 0.6s ease";
+  document.body.appendChild(overlay);
+
+  requestAnimationFrame(() => { overlay.style.opacity = 1; });
+
+  setTimeout(() => {
+    try { window.location.replace(url); } catch {}
+    setTimeout(() => { window.location.href = url; }, 200);
+  }, 600);
+};
 
   // ===== Verify Key =====
   const verifyKey = async () => {
