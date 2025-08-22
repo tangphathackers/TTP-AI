@@ -62,14 +62,26 @@ comboResults: document.getElementById('combo-results'),
 let commandCounter = 0;
 let infoTooltipTimeout;
 // --- CORE HELPER & UI FUNCTIONS ---
+// TÌM VÀ THAY THẾ TOÀN BỘ HÀM NÀY
+
 const showInfoTooltip = (title, description) => {
-clearTimeout(infoTooltipTimeout);
-refs.infoTooltipTitle.textContent = title;
-refs.infoTooltipDesc.textContent = description;
-refs.infoTooltip.classList.add('visible');
-infoTooltipTimeout = setTimeout(() => {
-refs.infoTooltip.classList.remove('visible');
-}, 5000);
+    clearTimeout(infoTooltipTimeout); // Xóa timeout cũ nếu có
+
+    // --- NÂNG CẤP: LƯỚI AN TOÀN CHO TOOLTIP ---
+    const finalTitle = title || "Thông tin lệnh"; // Tiêu đề mặc định nếu title rỗng
+    // Kiểm tra xem description có rỗng, null, hoặc undefined hay không
+    const finalDescription = description || "Lệnh này hiện chưa có mô tả chi tiết.";
+
+    refs.infoTooltipTitle.textContent = finalTitle;
+    refs.infoTooltipDesc.textContent = finalDescription; // Sử dụng mô tả cuối cùng
+    // --- KẾT THÚC NÂNG CẤP ---
+
+    refs.infoTooltip.classList.add('visible');
+
+    // Tự động ẩn sau 5 giây
+    infoTooltipTimeout = setTimeout(() => {
+        refs.infoTooltip.classList.remove('visible');
+    }, 5000);
 };
 const showToast = (message, type = 'pending', duration = 3000) => {
 refs.outputToast.textContent = message;
