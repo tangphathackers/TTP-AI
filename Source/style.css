@@ -475,40 +475,61 @@ cursor: help;
 content: ' 👑';
 font-size: 0.9rem;
 }
+/* TÌM VÀ THAY THẾ TOÀN BỘ KHỐI CSS NÀY */
+
+/* --- STYLE INFO TOOLTIP --- */
 .info-tooltip {
-position: fixed;
-bottom: 20px;
-left: 50%;
-transform: translate(-50%, 10px);
-background: rgba(20, 20, 25, 0.9);
-border: 1px solid var(--panel-border);
-border-radius: 16px;
-padding: 15px 20px;
-width: 90%;
-max-width: 400px;
-z-index: 1001;
-opacity: 0;
-visibility: hidden;
-transition: all 0.4s cubic-bezier(0.21, 1.02, 0.73, 1);
-backdrop-filter: blur(10px);
--webkit-backdrop-filter: blur(10px);
-will-change: transform, opacity;
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    /* Dùng translate để căn giữa và hiệu ứng trượt lên */
+    transform: translate(-50%, 20px); 
+    
+    background: rgba(20, 20, 25, 0.9);
+    border: 1px solid var(--panel-border);
+    border-radius: 16px;
+    padding: 15px 20px;
+    width: 90%;
+    max-width: 400px;
+    
+    /* z-index rất cao để đảm bảo nó nổi trên mọi thứ khác */
+    z-index: 1001; 
+    
+    /* Mặc định ẩn đi */
+    opacity: 0;
+    visibility: hidden;
+    
+    /* Hiệu ứng chuyển động mượt mà */
+    transition: all 0.4s cubic-bezier(0.21, 1.02, 0.73, 1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    
+    /* Ngăn người dùng vô tình chọn text bên trong tooltip */
+    user-select: none;
+    pointer-events: none; /* Tooltip không nên bắt các sự kiện chuột */
 }
+
+/* Khi tooltip có class 'visible' (được thêm bởi JS) */
 .info-tooltip.visible {
-opacity: 1;
-visibility: visible;
-transform: translate(-50%, 0);
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, 0); /* Trượt lên vị trí cuối cùng */
 }
+
+/* Tiêu đề của tooltip */
 .info-tooltip strong {
-color: var(--accent-color);
-display: block;
-margin-bottom: 8px;
+    color: var(--accent-color);
+    display: block;
+    margin-bottom: 8px;
+    font-size: 1rem;
 }
+
+/* Nội dung mô tả của tooltip */
 .info-tooltip p {
-margin: 0;
-font-size: 0.9rem;
-line-height: 1.6;
-color: var(--text-secondary);
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
 }
 /* --- STYLE HỆ THỐNG TAB --- */
 .tab-nav {
