@@ -135,96 +135,89 @@ buttonElement.classList.remove('executing', 'success', 'error');
 // TÌM HÀM populateDynamicUI VÀ THAY THẾ TOÀN BỘ NỘI DUNG CỦA NÓ
 
 const populateDynamicUI = async () => {
-    try {
-        const allCommands = await SecureComms.getCommands();
-        const keyInfo = JSON.parse(localStorage.getItem('ttp_key_info') || '{}');
-        const allowedFeatures = keyInfo.allowedFeatures || [];
-        if (!Array.isArray(allCommands)) {
-            throw new Error("Dữ liệu lệnh nhận từ server không hợp lệ.");
-        }
-        
-        const containers = {};
-        allCommands.forEach(command => {
-            if (command.category && !containers[command.category]) {
-                containers[command.category] = document.createDocumentFragment();
-            }
-        });
-
-        allCommands.forEach(command => {
-            const containerFragment = containers[command.category];
-            if (!containerFragment) return;
-
-            const button = document.createElement('button');
-            button.id = `ttp-${command.alias}`;
-            button.className = 'button';
-            button.textContent = command.name;
-
-            if (command.alias === 'resetall' || command.alias === 'reboot') {
-                button.classList.add('button-danger');
-            }
-            if (command.isVip) {
-                button.classList.add('is-vip');
-            }
-
-            const isAllowed = allowedFeatures.includes(command.alias);
-            if (isAllowed) {
-                // --- LOGIC SỰ KIỆN ĐÃ ĐƯỢC ĐƠN GIẢN HÓA ---
-                let pressTimer;
-                
-                // Chỉ gán sự kiện press-and-hold cho chuột trên máy tính
-                const startPress = () => {
-                    pressTimer = setTimeout(() => showInfoTooltip(command.name, command.description), 700);
-                };
-                const endPress = () => clearTimeout(pressTimer);
-                
-                button.addEventListener('mousedown', startPress);
-                button.addEventListener('mouseup', endPress);
-                button.addEventListener('mouseleave', endPress);
-                
-                // Gán sự kiện click chính
-                button.addEventListener('click', () => {
-                    if (command.alias === 'resetall' || command.alias === 'reboot') {
-                        if (!confirm(`Hành động "${command.name}" có thể gây nguy hiểm. Bạn có chắc chắn?`)) {
-                            return;
-                        }
-                    }
-                    switch (command.type) {
-                        case 'dynamic_script':
-                            const scriptURL = prompt("Nhập link raw GitHub của script bạn muốn chạy:", command.url);
-                            if (scriptURL) {
-                                const cmd = `dynamic-run ${scriptURL}`;
-                                executeCommand(cmd, `Chạy Động: ${scriptURL.split('/').pop()}`, button);
-                            }
-                            break;
-                        case 'redirect':
-                            window.open(command.url, '_blank');
-                            button.innerHTML = `✅ Đã mở!`;
-                            setTimeout(() => { button.innerHTML = command.name; }, 2000);
-                            break;
-                        default:
-                            executeCommand(`remote-alias:${command.alias}`, command.name, button);
-                            break;
-                    }
-                });
-            } else {
-                button.disabled = true;
-                button.classList.add('disabled-feature');
-                const reason = command.isVip ? 'Tính năng này yêu cầu Key VIP.' : 'Bạn không có quyền truy cập tính năng này.';
-                button.addEventListener('click', () => showInfoTooltip("Tính Năng Bị Khóa", reason));
-            }
-            containerFragment.appendChild(button);
-        });
-
-        for (const category in containers) {
-            const realContainer = document.getElementById(`category-${category}`);
-            if (realContainer) {
-                realContainer.appendChild(containers[category]);
-            }
-        }
-    } catch (e) {
-        console.error("Lỗi nghiêm trọng khi tải danh sách lệnh:", e);
-        alert("Không thể tải danh sách tính năng từ server. Vui lòng thử lại.");
-    }
+try {
+const allCommands = await SecureComms.getCommands();
+const keyInfo = JSON.parse(localStorage.getItem('ttp_key_info') || '{}');
+const allowedFeatures = keyInfo.allowedFeatures || [];
+if (!Array.isArray(allCommands)) {
+throw new Error("Dữ liệu lệnh nhận từ server không hợp lệ.");
+}
+const containers = {};
+allCommands.forEach(command => {
+if (command.category && !containers[command.category]) {
+containers[command.category] = document.createDocumentFragment();
+}
+});
+allCommands.forEach(command => {
+const containerFragment = containers[command.category];
+if (!containerFragment) return;
+const button = document.createElement('button');
+button.id = `ttp-${command.alias}`;
+button.className = 'button';
+button.textContent = command.name;
+if (command.alias === 'resetall' || command.alias === 'reboot') {
+button.classList.add('button-danger');
+}
+if (command.isVip) {
+button.classList.add('is-vip');
+}
+const isAllowed = allowedFeatures.includes(command.alias);
+if (isAllowed) {
+let pressTimer;
+const startPress = (e) => {
+e.preventDefault();
+pressTimer = setTimeout(() => showInfoTooltip(command.name, command.description), 700);
+};
+const endPress = () => clearTimeout(pressTimer);
+button.addEventListener('mousedown', startPress);
+button.addEventListener('mouseup', endPress);
+button.addEventListener('mouseleave', endPress);
+button.addEventListener('touchstart', startPress, { passive: true });
+button.addEventListener('touchend', endPress);
+button.addEventListener('click', () => {
+if (command.alias === 'resetall' || command.alias === 'reboot') {
+if (!confirm(`Hành động "${command.name}" có thể gây nguy hiểm. Bạn có chắc chắn?`)) {
+return;
+}
+}
+switch (command.type) {
+case 'dynamic_script':
+const scriptURL = prompt("Nhập link raw GitHub của script bạn muốn chạy:", command.url);
+if (scriptURL) {
+const cmd = `dynamic-run ${scriptURL}`;
+executeCommand(cmd, `Chạy Động: ${scriptURL.split('/').pop()}`, button);
+}
+break;
+case 'redirect':
+window.open(command.url, '_blank');
+button.innerHTML = `✅ Đã mở!`;
+setTimeout(() => { button.innerHTML = command.name; }, 2000);
+break;
+default:
+executeCommand(`remote-alias:${command.alias}`, command.name, button);
+break;
+}
+});
+} else {
+button.disabled = true;
+button.classList.add('disabled-feature');
+const reason = command.isVip
+? 'Tính năng này yêu cầu Key VIP. Hãy nâng cấp!'
+: 'Bạn không có quyền truy cập tính năng này.';
+button.addEventListener('click', () => showInfoTooltip("Tính Năng Bị Khóa", reason));
+}
+containerFragment.appendChild(button);
+});
+for (const category in containers) {
+const realContainer = document.getElementById(`category-${category}`);
+if (realContainer) {
+realContainer.appendChild(containers[category]);
+}
+}
+} catch (e) {
+console.error("Lỗi nghiêm trọng khi tải danh sách lệnh:", e);
+alert("Không thể tải danh sách tính năng từ server. Vui lòng thử lại.");
+}
 };
 // --- SYSTEM MONITORING & OTHER FEATURES ---
 const fetchDeviceInfo = async () => {

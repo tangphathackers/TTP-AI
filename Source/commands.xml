@@ -204,12 +204,6 @@
 </command>
 <command alias="goto-truyen" vip="true" category="online_utility">
 <name>Kênh Truyện Tranh</name>
-<description>Truy cập các khóa học nâng cao dành cho thành viên VIP.</description>
-<type>redirect</type>
-<url>https://www.tiktok.com/@ttp_ai</url>
-</command>
-<command alias="goto-truyen" vip="true" category="online_utility">
-<name>Kênh Truyện Tranh</name>
 <description>Truyện tranh.</description>
 <type>redirect</type>
 <url>https://nettruyen1905.com/</url>
