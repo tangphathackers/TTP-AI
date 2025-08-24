@@ -193,3 +193,18 @@ input:focus {
   color: #90caf9;
   text-shadow: 0 0 6px rgba(0,249,255,0.6);
 }
+.vip-hint {
+  font-size: 13px;
+  margin-top: -4px;
+  margin-bottom: 12px;
+  color: #ffb74d;
+  text-shadow: 0 0 6px rgba(255, 183, 77, 0.7);
+}
+.vip-hint a {
+  color: #ffd54f;
+  font-weight: bold;
+  text-decoration: none;
+}
+.vip-hint a:hover {
+  text-decoration: underline;
+}
