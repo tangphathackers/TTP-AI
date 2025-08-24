@@ -1,11 +1,11 @@
-// login_main.js — Intro logo + redirect chuẩn, không lỗi
+// login_main.js — Intro logo + redirect chuẩn + fade-out + key free demo
 import { initCryptoScene } from "./login_3d.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   const introLogo = document.getElementById("intro-logo");
   const loginContainer = document.getElementById("login-container");
 
-  // ===== Intro Logo Animation =====
+  // ===== Intro Logo =====
   if (introLogo) {
     if (window.gsap) {
       gsap.fromTo(
@@ -14,7 +14,6 @@ document.addEventListener("DOMContentLoaded", () => {
         { scale: 1.2, opacity: 1, duration: 1, ease: "back.out(2)" }
       );
     }
-
     setTimeout(() => {
       if (window.gsap) {
         gsap.to(introLogo, {
@@ -22,12 +21,9 @@ document.addEventListener("DOMContentLoaded", () => {
           duration: 0.8,
           onComplete: () => introLogo.remove(),
         });
-      } else {
-        introLogo.remove();
-      }
-      // Show 3D background
+      } else introLogo.remove();
+
       initCryptoScene();
-      // Show form
       loginContainer.classList.remove("hidden");
       if (window.motion) {
         window.motion.animate(
@@ -38,7 +34,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }, 2500);
   } else {
-    // fallback nếu không có logo
     initCryptoScene();
     loginContainer.classList.remove("hidden");
   }
@@ -55,6 +50,17 @@ document.addEventListener("DOMContentLoaded", () => {
   const mainLinkBtn = document.getElementById("mainLinkBtn");
   const fallback1LinkBtn = document.getElementById("fallback1LinkBtn");
   const fallback2LinkBtn = document.getElementById("fallback2LinkBtn");
+
+  // ===== Thêm liên hệ mua key VIP =====
+  const contactDiv = document.createElement("div");
+  contactDiv.innerHTML = `🔑 Liên hệ mua key VIP tại 
+    <a href="https://zalo.me/g/ichtzt219" target="_blank" style="color:#4FC3F7;text-decoration:underline;">
+      Zalo
+    </a>`;
+  contactDiv.style.marginTop = "12px";
+  contactDiv.style.fontSize = "14px";
+  contactDiv.style.color = "#aaa";
+  document.getElementById("login-form").appendChild(contactDiv);
 
   // ===== Server config linh hoạt =====
   const savedBase = localStorage.getItem("ttp_server_base") || "";
@@ -129,42 +135,48 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
+  // ===== Fade-out redirect (fix lớp trắng) =====
   const redirectToDashboard = () => {
-  const base =
-    activeBase ||
-    (location.origin && location.origin.startsWith("http")
-      ? location.origin
-      : "http://127.0.0.1:8080");
-  const url = base.replace(/\/+$/, "") + "/dashboard";
+    const base =
+      activeBase ||
+      (location.origin && location.origin.startsWith("http")
+        ? location.origin
+        : "http://127.0.0.1:8080");
+    const url = base.replace(/\/+$/, "") + "/dashboard";
 
-  // tạo lớp overlay đen
-  const overlay = document.createElement("div");
-  overlay.style.position = "fixed";
-  overlay.style.top = 0;
-  overlay.style.left = 0;
-  overlay.style.width = "100%";
-  overlay.style.height = "100%";
-  overlay.style.background = "#000";
-  overlay.style.opacity = 0;
-  overlay.style.zIndex = 9999;
-  overlay.style.transition = "opacity 0.6s ease";
-  document.body.appendChild(overlay);
+    const overlay = document.createElement("div");
+    overlay.style.position = "fixed";
+    overlay.style.top = 0;
+    overlay.style.left = 0;
+    overlay.style.width = "100%";
+    overlay.style.height = "100%";
+    overlay.style.background = "#000";
+    overlay.style.opacity = 0;
+    overlay.style.zIndex = 9999;
+    overlay.style.transition = "opacity 0.6s ease";
+    document.body.appendChild(overlay);
 
-  requestAnimationFrame(() => { overlay.style.opacity = 1; });
+    requestAnimationFrame(() => { overlay.style.opacity = 1; });
 
-  setTimeout(() => {
-    try { window.location.replace(url); } catch {}
-    setTimeout(() => { window.location.href = url; }, 200);
-  }, 600);
-};
+    setTimeout(() => {
+      try { window.location.replace(url); } catch {}
+      setTimeout(() => { window.location.href = url; }, 200);
+    }, 600);
+  };
 
   // ===== Verify Key =====
   const verifyKey = async () => {
     const key = keyInput.value.trim();
-    if (!key) {
-      alert("❗ Vui lòng nhập key!");
+    if (!key) { alert("❗ Vui lòng nhập key!"); return; }
+
+    // Key free demo
+    if (key === "TTP") {
+      statusText.textContent = "✅ Đăng nhập với key free TTP!";
+      localStorage.setItem("ttp_key_info", JSON.stringify({ key: "TTP", status: "ok" }));
+      setTimeout(() => redirectToDashboard(), 1200);
       return;
     }
+
     setLoading(true, "Đang xác thực...");
     try {
       const id = await getUUID();
@@ -173,15 +185,13 @@ document.addEventListener("DOMContentLoaded", () => {
         body: JSON.stringify({ id, key }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        throw new Error((data && data.message) || `Lỗi server (${res.status})`);
-      }
+      if (!res.ok) throw new Error(data?.message || `Lỗi server (${res.status})`);
       if (data && data.status === "ok") {
         localStorage.setItem("ttp_key_info", JSON.stringify(data));
         statusText.textContent = "✅ Thành công! Đang chuyển hướng...";
         redirectToDashboard();
       } else {
-        throw new Error((data && data.message) || "Key không hợp lệ.");
+        throw new Error(data?.message || "Key không hợp lệ.");
       }
     } catch (err) {
       setLoading(false, "");
@@ -208,30 +218,18 @@ document.addEventListener("DOMContentLoaded", () => {
       alert(data.message || "Đã gửi yêu cầu đăng ký.");
     } catch (err) {
       alert("Lỗi đăng ký: " + (err?.message || err));
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   };
 
   // ===== Events =====
   verifyBtn.addEventListener("click", verifyKey);
-  keyInput.addEventListener("keyup", (e) => {
-    if (e.key === "Enter") verifyKey();
-  });
+  keyInput.addEventListener("keyup", (e) => { if (e.key === "Enter") verifyKey(); });
   registerBtn.addEventListener("click", registerDevice);
 
   getFreeKeyBtn.addEventListener("click", () => linkModal.classList.remove("hidden"));
   closeModalBtn.addEventListener("click", () => linkModal.classList.add("hidden"));
-  linkModal.addEventListener("click", (e) => {
-    if (e.target === linkModal) linkModal.classList.add("hidden");
-  });
-  mainLinkBtn.addEventListener("click", () =>
-    window.open("https://yeumoney.com/BOi3E8", "_blank")
-  );
-  fallback1LinkBtn.addEventListener("click", () =>
-    window.open("https://link4m.com/fAZyNYQZ", "_blank")
-  );
-  fallback2LinkBtn.addEventListener("click", () =>
-    alert("Link dự phòng 2 chưa có!")
-  );
+  linkModal.addEventListener("click", (e) => { if (e.target === linkModal) linkModal.classList.add("hidden"); });
+  mainLinkBtn.addEventListener("click", () => window.open("https://yeumoney.com/BOi3E8", "_blank"));
+  fallback1LinkBtn.addEventListener("click", () => window.open("https://link4m.com/fAZyNYQZ", "_blank"));
+  fallback2LinkBtn.addEventListener("click", () => alert("Link dự phòng 2 chưa có!"));
 });
