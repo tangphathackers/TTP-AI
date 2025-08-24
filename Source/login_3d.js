@@ -1,21 +1,17 @@
-// login_3d.js — nền 3D với các khối lập phương chuyển động
+// login_3d.js — nền 3D với các khối neon cube
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js";
 
 export function initCryptoScene() {
   const canvas = document.getElementById("bg");
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.setClearColor(0x000000, 1);
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
   const scene = new THREE.Scene();
 
   // Camera
-  const camera = new THREE.PerspectiveCamera(
-    60,
-    window.innerWidth / window.innerHeight,
-    0.1,
-    1000
-  );
+  const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
   camera.position.z = 20;
 
   // Light
@@ -24,22 +20,18 @@ export function initCryptoScene() {
   point.position.set(10, 15, 25);
   scene.add(ambient, point);
 
-  // Geometry: nhiều khối cube phát sáng
+  // Geometry: cubes neon
   const cubes = [];
-  const cubeMaterial = new THREE.MeshStandardMaterial({
-    color: 0x00f9ff,
-    metalness: 0.7,
-    roughness: 0.2,
-    emissive: 0x005577,
-    emissiveIntensity: 0.8,
-  });
-
   for (let i = 0; i < 40; i++) {
     const size = Math.random() * 0.8 + 0.3;
     const geo = new THREE.BoxGeometry(size, size, size);
-    const mat = cubeMaterial.clone();
-    mat.color.setHSL(Math.random(), 0.8, 0.5);
-
+    const mat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color(`hsl(${Math.random() * 360}, 80%, 50%)`),
+      metalness: 0.6,
+      roughness: 0.3,
+      emissive: 0x003344,
+      emissiveIntensity: 0.6,
+    });
     const cube = new THREE.Mesh(geo, mat);
     cube.position.set(
       (Math.random() - 0.5) * 40,
@@ -64,8 +56,6 @@ export function initCryptoScene() {
     cubes.forEach((cube, i) => {
       cube.rotation.x += 0.005 + i * 0.0001;
       cube.rotation.y += 0.006 + i * 0.0001;
-      cube.position.x += Math.sin(Date.now() * 0.001 + i) * 0.0005;
-      cube.position.y += Math.cos(Date.now() * 0.0012 + i) * 0.0005;
     });
 
     camera.position.x += (mouse.x * 5 - camera.position.x) * 0.02;
