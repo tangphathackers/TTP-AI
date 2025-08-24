@@ -1,185 +1,123 @@
-/* ===== Reset ===== */
-* { margin: 0; padding: 0; box-sizing: border-box; }
+/* login_style.css - Phiên bản Tối giản Hoàn thiện (Đã đồng bộ Input và Button) */
 
-body, html {
-  width: 100%;
-  height: 100%;
-  background: #000;
-  color: #fff;
-  font-family: Arial, Helvetica, sans-serif; /* Giữ font cũ */
-  letter-spacing: 0.5px;
-  overflow: hidden;
+/* === BẢNG MÀU MONOCHROME === */
+:root {
+  --bg: #101010;
+  --glass-bg: rgba(16, 16, 16, 0.5); /* Nền kính tối, tăng nhẹ độ sáng */
+  --text-primary: #F0F0F0;         
+  --text-secondary: #A0A0A0;        
+  --highlight-glow: #FFFFFF;        
+  --border-color: rgba(255, 255, 255, 0.1);
+  --border-focus: rgba(255, 255, 255, 0.5);
+  --error-color: #ff6b6b;
 }
 
-/* ===== Canvas 3D ===== */
-#bg {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100vw; height: 100vh;
-  z-index: 0;
-  background: black;
-}
+/* === CÀI ĐẶT CƠ BẢN === */
+body { font-family: 'Poppins', sans-serif; background-color: var(--bg); color: var(--text-primary); overflow: hidden; }
+.font-orbitron { font-family: 'Orbitron', sans-serif; }
+.glow-text { color: var(--highlight-glow); text-shadow: 0 0 10px rgba(255, 255, 255, 0.7); }
 
-/* ===== Intro Logo ===== */
-#intro-logo {
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 3;
-}
-#intro-logo h1 {
-  font-size: 2.5rem;
-  font-weight: bold;
-  color: #00f9ff;
-  text-shadow: 0 0 25px #00f9ff, 0 0 50px #00c4cc;
-  text-align: center;
-}
+/* === HIỆU ỨNG NỀN TINH TẾ === */
+.aurora-layer { position: fixed; inset: 0; z-index: -2; background: radial-gradient(circle at 20% 30%, rgba(255,255,255,0.04) 0, transparent 50%), radial-gradient(circle at 80% 70%, rgba(255,255,255,0.03) 0, transparent 40%); filter: blur(40px); animation: auroraFloat 30s ease-in-out infinite alternate; }
+@keyframes auroraFloat { from { transform: translateY(0) rotate(0deg) scale(1); } to { transform: translateY(-2vh) rotate(-10deg) scale(1.2); } }
 
-/* ===== Login Container ===== */
-#login-container {
-  position: relative;
-  z-index: 2;
-  width: 340px;
-  margin: 8% auto;
-  padding: 26px 22px;
-  background: rgba(0,0,0,0.65);
-  border-radius: 14px;
-  box-shadow: 0 0 20px rgba(0,249,255,0.35);
-  text-align: center;
+/* === KHUNG CHỨA VÔ HÌNH VÀ FORM === */
+.card-glass { background: transparent; backdrop-filter: none; border: none; box-shadow: none; border-radius: 20px; }
+
+/* --- CÁC THÀNH PHẦN CON BÊN TRONG --- */
+.input-group { position: relative; }
+
+/* TRẠNG THÁI MẶC ĐỊNH CỦA INPUT: Kính mờ tối */
+.input-neon {
+  width: 100%; padding: 14px; border-radius: 12px;
+  background: var(--glass-bg);
+  border: 1px solid var(--border-color);
   backdrop-filter: blur(5px);
+  color: var(--text-primary);
+  transition: all 0.3s ease;
+}
+.input-neon.error { border-color: var(--error-color) !important; box-shadow: 0 0 15px rgba(255, 107, 107, 0.3) !important; }
+
+/* TRẠNG THÁI KHI FOCUS VÀO INPUT: Sáng trắng */
+.input-neon:focus + .input-label,
+.input-neon:not(:placeholder-shown) + .input-label {
+  opacity: 0; /* Mờ dần */
+  visibility: hidden; /* Biến mất hoàn toàn */
+}
+.input-neon.error {
+    border-color: var(--error-color) !important;
+    box-shadow: 0 0 15px rgba(255, 107, 107, 0.3) !important;
 }
 
-#login-container h2 {
-  font-size: 1.3rem;
-  font-weight: bold;
-  margin-bottom: 16px;
-  color: #00f9ff;
-  text-shadow: 0 0 10px #00c4cc;
+.input-label {
+  position: absolute;
+  /* Đặt ở vị trí cuối cùng (khi đã nổi lên) */
+  top: -8px; 
+  left: 10px;
+  font-size: .75rem; 
+  
+  color: #94A3B8;
+  padding: 0 4px;
+  pointer-events: none;
+  opacity: 1; /* Hiện rõ */
+  visibility: visible;
+  /* Di chuyển và phóng to về vị trí ban đầu */
+  transform-origin: left top;
+  transform: translateY(22px) scale(1.33);
+
+  /* Chỉ chuyển động transform và color để mượt nhất */
+  transition: transform 0.2s ease, color 0.2s ease;
 }
 
-/* ===== Input ===== */
-#login-container input {
-  width: 100%;
-  padding: 11px;
-  margin: 11px 0;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  outline: none;
-  text-align: center;
-  background: #111;
-  color: #fff;
-  box-shadow: inset 0 0 6px rgba(0,249,255,0.35);
-}
-#login-container input:focus {
-  box-shadow: 0 0 10px #00f9ff;
-  border: 1px solid #00f9ff;
+/* TRẠNG THÁI MẶC ĐỊNH CỦA NÚT BẤM: Kính mờ tối, giống hệt Input */
+.btn-neon {
+  background: var(--glass-bg); /* Giống Input */
+  border: 1px solid var(--border-color); /* Giống Input */
+  color: var(--text-primary);
+  font-weight: 600;
+  transition: all 0.3s ease;
+  height: 52px;
+  border-radius: 12px;
+  backdrop-filter: blur(5px); /* Giống Input */
 }
 
-/* ===== Free + VIP Hint ===== */
-.free-hint, .vip-hint {
-  font-size: 12.5px;
-  margin: 5px 0 10px 0;
+/* TRẠNG THÁI KHI HOVER VÀO NÚT BẤM: Sáng trắng, giống hệt Input Focus */
+.btn-neon:hover {
+  background: var(--border-color);
+  color: var(--highlight-glow);
+  border-color: var(--border-color);
 }
-.free-hint {
-  color: #90caf9;
-  text-shadow: 0 0 5px rgba(0,249,255,0.6);
-}
-.vip-hint {
-  color: #ffb74d;
-  text-shadow: 0 0 5px rgba(255,183,77,0.65);
-}
-.vip-hint a {
-  color: #ffd54f;
-  font-weight: bold;
-  text-decoration: none;
-}
-.vip-hint a:hover { text-decoration: underline; }
+/* ============================================== */
 
-/* ===== Buttons ===== */
-.btn-group {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin-bottom: 8px;
-}
+/* === CÁC THÀNH PHẦN PHỤ (Không đổi) === */
+.link-minor { color: var(--text-secondary); transition: color 0.3s ease; }
+.link-minor:hover { color: var(--text-primary); }
+.free-hint strong { color: var(--highlight-glow); font-weight: 600; }
+.vip-hint a { color: var(--highlight-glow); font-weight: 600; text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.3s; }
+.vip-hint a:hover { border-color: var(--highlight-glow); }
 
-#login-container button {
-  flex: 1;
-  padding: 9px 14px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: bold;
-  font-family: Arial, Helvetica, sans-serif;
-  background: #00f9ff;
-  color: #000;
-  transition: 0.25s;
-}
-#login-container button:hover {
-  background: #00c4cc;
-  box-shadow: 0 0 10px #00f9ff;
-}
-#login-container button.secondary {
-  width: 100%;
-  margin-top: 8px;
-  background: #222;
-  color: #00f9ff;
-  border: 1px solid #00f9ff;
-}
-#login-container button.secondary:hover {
-  background: #00f9ff;
-  color: #000;
-}
+/* Modal */
+.modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); display: grid; place-items: center; z-index: 100; }
+.modal-card { background: var(--glass-bg); backdrop-filter: blur(12px); border: 1px solid var(--border-color); box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3); border-radius: 16px; padding: 24px; position: relative; max-width: 320px; width: 100%; }
+.modal-close { position: absolute; top: 6px; right: 10px; font-size: 24px; color: var(--text-secondary); }
 
-/* ===== Loader + Status ===== */
-#loader {
-  margin: 8px 0;
-  font-size: 13px;
-  color: #fff176;
-}
-#status-text {
-  font-size: 12.5px;
-  min-height: 16px;
-  margin-top: 3px;
-  color: #eee;
-}
+/* Các nút trong Modal */
+.btn-solid, .btn-outline, .btn-outline-purple { padding: 10px; border-radius: 10px; font-weight: 600; transition: all 0.3s; }
+.btn-solid { background: var(--highlight-glow); color: var(--bg); }
+.btn-solid:hover { transform: scale(1.05); }
+.btn-outline, .btn-outline-purple { border: 1px solid var(--border-color); color: var(--text-secondary); background: transparent; }
+.btn-outline:hover, .btn-outline-purple:hover { border-color: var(--highlight-glow); color: var(--highlight-glow); }
 
-/* ===== Modal ===== */
-.modal {
-  position: fixed;
-  top:0; left:0;
-  width:100%; height:100%;
-  background: rgba(0,0,0,0.65);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  z-index: 5;
-}
-.modal.hidden { display: none; }
-
-.modal-card {
-  background:#111;
-  padding:18px;
-  border-radius:8px;
-  text-align:center;
-  width: 270px;
-  box-shadow: 0 0 15px rgba(0,249,255,0.35);
-}
-.modal-card h3 {
-  margin-bottom: 10px;
-  color: #00f9ff;
-}
-.modal-card button {
-  margin:4px;
-  padding:7px 12px;
-  border:none;
-  border-radius:6px;
-  background:#00f9ff;
-  color:#000;
-  cursor:pointer;
-  font-family: Arial, Helvetica, sans-serif;
-}
-.modal-card button:hover {
-  background:#00c4cc;
+/* Loader */
+.abs-center { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+.spinner { width: 30px; height: 30px; border: 4px solid var(--border-color); border-top-color: var(--highlight-glow); border-radius: 50%; animation: spin .9s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+/* Fix lỗi nền vàng tự điền của Chrome */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px #182133 inset !important; /* Dùng shadow để tô đè lên nền vàng */
+    -webkit-text-fill-color: #E5E7EB !important; /* Đảm bảo chữ vẫn màu trắng */
+    transition: background-color 5000s ease-in-out 0s; /* Ngăn Chrome đổi màu nền */
 }
