@@ -1,41 +1,29 @@
-// login_main.js — Intro logo + redirect chuẩn + fade-out + key free demo
+// login_main.js — chuẩn, không bypass key
 import { initCryptoScene } from "./login_3d.js";
 
 document.addEventListener("DOMContentLoaded", () => {
-  const introLogo = document.getElementById("intro-logo");
-  const loginContainer = document.getElementById("login-container");
+  // ===== 3D nền =====
+  initCryptoScene();
 
-  // ===== Intro Logo =====
-  if (introLogo) {
-    if (window.gsap) {
-      gsap.fromTo(
-        introLogo.querySelector("h1"),
-        { scale: 0.6, opacity: 0 },
-        { scale: 1.2, opacity: 1, duration: 1, ease: "back.out(2)" }
-      );
+  // ===== Animate intro logo =====
+  const intro = document.getElementById("intro-logo");
+  setTimeout(() => {
+    if (intro) {
+      intro.style.transition = "opacity 0.8s ease";
+      intro.style.opacity = "0";
+      setTimeout(() => intro.remove(), 800);
+      // Hiện form sau khi intro xong
+      document.getElementById("login-container").classList.remove("hidden");
     }
-    setTimeout(() => {
-      if (window.gsap) {
-        gsap.to(introLogo, {
-          opacity: 0,
-          duration: 0.8,
-          onComplete: () => introLogo.remove(),
-        });
-      } else introLogo.remove();
+  }, 2000);
 
-      initCryptoScene();
-      loginContainer.classList.remove("hidden");
-      if (window.motion) {
-        window.motion.animate(
-          "#login-form",
-          { y: [40, 0], opacity: [0, 1], scale: [0.96, 1] },
-          { duration: 0.8, ease: "easeOut" }
-        );
-      }
-    }, 2500);
-  } else {
-    initCryptoScene();
-    loginContainer.classList.remove("hidden");
+  // ===== Animate form =====
+  if (window.motion) {
+    window.motion.animate(
+      "#login-form",
+      { y: [40, 0], opacity: [0, 1], scale: [0.96, 1] },
+      { duration: 0.8, ease: "easeOut", delay: 2.0 }
+    );
   }
 
   // ===== DOM =====
@@ -51,18 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const fallback1LinkBtn = document.getElementById("fallback1LinkBtn");
   const fallback2LinkBtn = document.getElementById("fallback2LinkBtn");
 
-  // ===== Thêm liên hệ mua key VIP =====
-  const contactDiv = document.createElement("div");
-  contactDiv.innerHTML = `🔑 Liên hệ mua key VIP tại 
-    <a href="https://zalo.me/g/ichtzt219" target="_blank" style="color:#4FC3F7;text-decoration:underline;">
-      Zalo
-    </a>`;
-  contactDiv.style.marginTop = "12px";
-  contactDiv.style.fontSize = "14px";
-  contactDiv.style.color = "#aaa";
-  document.getElementById("login-form").appendChild(contactDiv);
-
-  // ===== Server config linh hoạt =====
+  // ===== Cấu hình server linh hoạt =====
   const savedBase = localStorage.getItem("ttp_server_base") || "";
   const candidates = [];
   if (location.origin && location.origin.startsWith("http")) candidates.push(location.origin);
@@ -71,9 +48,10 @@ document.addEventListener("DOMContentLoaded", () => {
   candidates.push("https://127.0.0.1:8080");
   candidates.push("http://localhost:8080");
 
-  let activeBase = null;
+  let activeBase = null; // server thực tế đã phản hồi thành công
   const headersJSON = { "Content-Type": "application/json" };
 
+  // fetch có fallback qua các base ở trên
   const apiFetch = async (path, options = {}) => {
     let lastErr = null;
     for (const base of candidates) {
@@ -91,23 +69,33 @@ document.addEventListener("DOMContentLoaded", () => {
     throw lastErr || new Error("Không thể kết nối server");
   };
 
-  // ===== Helpers =====
+  // ===== UI helpers =====
   const setLoading = (on, msg = "") => {
     loader.classList.toggle("hidden", !on);
     verifyBtn.classList.toggle("hidden", on);
     statusText.textContent = msg;
   };
 
+  // Ripple effect
+  const attachRipple = (el) => {
+    el.addEventListener("pointerdown", (e) => {
+      const r = el.getBoundingClientRect();
+      el.style.setProperty("--x", `${e.clientX - r.left}px`);
+      el.style.setProperty("--y", `${e.clientY - r.top}px`);
+    });
+  };
+  attachRipple(verifyBtn);
+
+  // ===== UUID =====
   const genLocalUUID = () => {
     const buf = new Uint8Array(16);
     crypto.getRandomValues(buf);
     buf[6] = (buf[6] & 0x0f) | 0x40;
     buf[8] = (buf[8] & 0x3f) | 0x80;
     const hex = [...buf].map((b) => b.toString(16).padStart(2, "0"));
-    return (
-      `${hex[0]}${hex[1]}${hex[2]}${hex[3]}-${hex[4]}${hex[5]}-` +
-      `${hex[6]}${hex[7]}-${hex[8]}${hex[9]}-${hex.slice(10).join("")}`
-    );
+    return `${hex[0]}${hex[1]}${hex[2]}${hex[3]}-${hex[4]}${hex[5]}-${hex[6]}${hex[7]}-${hex[8]}${hex[9]}-${hex
+      .slice(10)
+      .join("")}`;
   };
 
   const getUUID = async () => {
@@ -135,7 +123,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  // ===== Fade-out redirect (fix lớp trắng) =====
+  // ===== Redirect với fade-out =====
   const redirectToDashboard = () => {
     const base =
       activeBase ||
@@ -156,24 +144,25 @@ document.addEventListener("DOMContentLoaded", () => {
     overlay.style.transition = "opacity 0.6s ease";
     document.body.appendChild(overlay);
 
-    requestAnimationFrame(() => { overlay.style.opacity = 1; });
+    requestAnimationFrame(() => {
+      overlay.style.opacity = 1;
+    });
 
     setTimeout(() => {
-      try { window.location.replace(url); } catch {}
-      setTimeout(() => { window.location.href = url; }, 200);
+      try {
+        window.location.replace(url);
+      } catch {}
+      setTimeout(() => {
+        window.location.href = url;
+      }, 200);
     }, 600);
   };
 
-  // ===== Verify Key =====
+  // ===== VERIFY KEY =====
   const verifyKey = async () => {
     const key = keyInput.value.trim();
-    if (!key) { alert("❗ Vui lòng nhập key!"); return; }
-
-    // Key free demo
-    if (key === "TTP") {
-      statusText.textContent = "✅ Đăng nhập với key free TTP!";
-      localStorage.setItem("ttp_key_info", JSON.stringify({ key: "TTP", status: "ok" }));
-      setTimeout(() => redirectToDashboard(), 1200);
+    if (!key) {
+      alert("❗ Vui lòng nhập key!");
       return;
     }
 
@@ -185,21 +174,25 @@ document.addEventListener("DOMContentLoaded", () => {
         body: JSON.stringify({ id, key }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data?.message || `Lỗi server (${res.status})`);
+
+      if (!res.ok) {
+        const msg = data && data.message ? data.message : `Lỗi server (${res.status})`;
+        throw new Error(msg);
+      }
       if (data && data.status === "ok") {
         localStorage.setItem("ttp_key_info", JSON.stringify(data));
         statusText.textContent = "✅ Thành công! Đang chuyển hướng...";
         redirectToDashboard();
       } else {
-        throw new Error(data?.message || "Key không hợp lệ.");
+        throw new Error((data && data.message) || "Key không hợp lệ.");
       }
     } catch (err) {
       setLoading(false, "");
-      alert("Lỗi xác thực: " + (err?.message || err));
+      alert("Lỗi xác thực: " + (err && err.message ? err.message : String(err)));
     }
   };
 
-  // ===== Register Device =====
+  // ===== REGISTER DEVICE =====
   const registerDevice = async () => {
     if (localStorage.getItem("ttp_registration_sent")) {
       alert("✅ Yêu cầu đăng ký đã được gửi trước đó.");
@@ -213,23 +206,50 @@ document.addEventListener("DOMContentLoaded", () => {
         body: JSON.stringify({ id }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data?.message || "Lỗi không xác định");
+      if (!res.ok) throw new Error((data && data.message) || "Lỗi không xác định");
       localStorage.setItem("ttp_registration_sent", "true");
       alert(data.message || "Đã gửi yêu cầu đăng ký.");
     } catch (err) {
-      alert("Lỗi đăng ký: " + (err?.message || err));
-    } finally { setLoading(false); }
+      alert("Lỗi đăng ký: " + (err && err.message ? err.message : String(err)));
+    } finally {
+      setLoading(false);
+    }
   };
 
   // ===== Events =====
   verifyBtn.addEventListener("click", verifyKey);
-  keyInput.addEventListener("keyup", (e) => { if (e.key === "Enter") verifyKey(); });
+  keyInput.addEventListener("keyup", (e) => {
+    if (e.key === "Enter") verifyKey();
+  });
   registerBtn.addEventListener("click", registerDevice);
 
-  getFreeKeyBtn.addEventListener("click", () => linkModal.classList.remove("hidden"));
-  closeModalBtn.addEventListener("click", () => linkModal.classList.add("hidden"));
-  linkModal.addEventListener("click", (e) => { if (e.target === linkModal) linkModal.classList.add("hidden"); });
-  mainLinkBtn.addEventListener("click", () => window.open("https://yeumoney.com/BOi3E8", "_blank"));
-  fallback1LinkBtn.addEventListener("click", () => window.open("https://link4m.com/fAZyNYQZ", "_blank"));
-  fallback2LinkBtn.addEventListener("click", () => alert("Link dự phòng 2 chưa có!"));
+  // Modal
+  const openModal = () => {
+    linkModal.classList.remove("hidden");
+    if (window.gsap) {
+      window.gsap.fromTo(
+        linkModal.querySelector(".modal-card"),
+        { scale: 0.9, opacity: 0 },
+        { scale: 1, opacity: 1, duration: 0.25, ease: "power2.out" }
+      );
+    }
+  };
+  const closeModal = () => linkModal.classList.add("hidden");
+
+  getFreeKeyBtn.addEventListener("click", openModal);
+  closeModalBtn.addEventListener("click", closeModal);
+  linkModal.addEventListener("click", (e) => {
+    if (e.target === linkModal) closeModal();
+  });
+
+  // Links
+  mainLinkBtn.addEventListener("click", () =>
+    window.open("https://zalo.me/g/ichtzt219", "_blank")
+  );
+  fallback1LinkBtn.addEventListener("click", () =>
+    window.open("https://link4m.com/fAZyNYQZ", "_blank")
+  );
+  fallback2LinkBtn.addEventListener("click", () =>
+    alert("Link dự phòng 2 chưa có!")
+  );
 });

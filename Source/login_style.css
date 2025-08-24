@@ -187,3 +187,9 @@ input:focus {
 .free-key {
   margin-top: 1rem;
 }
+.free-hint {
+  font-size: 13px;
+  margin: -8px 0 12px 0;
+  color: #90caf9;
+  text-shadow: 0 0 6px rgba(0,249,255,0.6);
+}
