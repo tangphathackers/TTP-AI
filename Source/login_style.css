@@ -1,119 +1,195 @@
 /* Reset */
-* { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-body, html { width: 100%; height: 100%; overflow: hidden; background: #000; color: #fff; }
-
-/* Canvas 3D */
-#bg {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100vw; height: 100vh;
-  z-index: 0;
-  background: black;
+body, html {
+  width: 100%;
+  height: 100%;
+  font-family: "Poppins", sans-serif;
+  overflow: hidden;
+  background: #000;
+  color: #fff;
 }
 
 /* Intro Logo */
 #intro-logo {
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 3;
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at center, #111 0%, #000 100%);
+  z-index: 2000;
 }
 #intro-logo h1 {
   font-size: 3rem;
+  font-weight: 700;
+  letter-spacing: 4px;
   color: #00f9ff;
-  text-shadow: 0 0 20px #00f9ff;
+  text-shadow: 0 0 10px #00f9ff, 0 0 20px #00f9ff, 0 0 40px #0077ff;
+  animation: pulse 2s infinite alternate;
+}
+@keyframes pulse {
+  from { text-shadow: 0 0 6px #00f9ff, 0 0 12px #00f9ff; }
+  to   { text-shadow: 0 0 20px #00f9ff, 0 0 50px #0077ff; }
 }
 
-/* Login Container */
+/* Background canvas */
+#bg {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: -1;
+}
+
+/* Login container */
 #login-container {
   position: relative;
-  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  z-index: 100;
+}
+.hidden { display: none; }
+
+/* Glass card */
+.glass-card {
+  background: rgba(15, 15, 25, 0.65);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+  padding: 2rem;
   width: 320px;
-  margin: 10% auto;
-  padding: 20px;
-  background: rgba(0,0,0,0.6);
-  border-radius: 15px;
-  box-shadow: 0 0 20px rgba(0,249,255,0.5);
   text-align: center;
+  box-shadow: 0 0 20px rgba(0,255,255,0.2);
+  animation: float 6s ease-in-out infinite alternate;
 }
-
-#login-container h2 {
-  margin-bottom: 15px;
-  font-size: 1.4rem;
+@keyframes float {
+  from { transform: translateY(-2px); }
+  to { transform: translateY(6px); }
+}
+.glass-card h2 {
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
   color: #00f9ff;
+  text-shadow: 0 0 8px #00f9ff;
 }
 
-#login-container input {
-  width: 90%;
-  padding: 10px;
-  margin: 10px 0;
-  border: none;
+/* Input */
+input {
+  width: 100%;
+  padding: 12px;
   border-radius: 8px;
+  border: none;
   outline: none;
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+  font-size: 14px;
+  margin-bottom: 1rem;
+  transition: all 0.3s ease;
 }
-
-/* Hint Key */
-.free-hint {
-  font-size: 13px;
-  margin: -8px 0 8px 0;
-  color: #90caf9;
-  text-shadow: 0 0 6px rgba(0,249,255,0.6);
+input:focus {
+  background: rgba(255,255,255,0.2);
+  box-shadow: 0 0 8px #00f9ff;
 }
-
-/* Hint VIP */
-.vip-hint {
-  font-size: 13px;
-  margin-top: -4px;
-  margin-bottom: 12px;
-  color: #ffb74d;
-  text-shadow: 0 0 6px rgba(255, 183, 77, 0.7);
-}
-.vip-hint a {
-  color: #ffd54f;
-  font-weight: bold;
-  text-decoration: none;
-}
-.vip-hint a:hover { text-decoration: underline; }
 
 /* Buttons */
-#login-container button {
-  margin: 8px;
-  padding: 10px 20px;
-  border: none;
+.btn, .btn-outline, .btn-link {
+  display: inline-block;
+  padding: 10px 16px;
   border-radius: 8px;
   cursor: pointer;
-  background: #00f9ff;
-  color: #000;
-  font-weight: bold;
-  transition: 0.3s;
+  font-weight: 600;
+  transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
 }
-#login-container button:hover {
-  background: #00c4cc;
+
+.btn {
+  background: linear-gradient(135deg, #00f9ff, #0066ff);
+  border: none;
+  color: #000;
+}
+.btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 10px #00f9ff;
+}
+
+.btn-outline {
+  border: 1px solid #00f9ff;
+  background: transparent;
+  color: #00f9ff;
+}
+.btn-outline:hover {
+  background: rgba(0, 249, 255, 0.15);
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: #4FC3F7;
+  font-size: 14px;
+  text-decoration: underline;
+  padding: 6px 12px;
+}
+
+/* Group */
+.btn-group {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 1rem;
 }
 
 /* Loader */
-#loader {
-  margin: 10px 0;
-  color: #fff176;
+.loader {
+  width: 26px;
+  height: 26px;
+  margin: 10px auto;
+  border: 3px solid #00f9ff;
+  border-top: 3px solid transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Status */
+#status-text {
+  margin-top: 8px;
+  font-size: 14px;
+  color: #eee;
+  min-height: 20px;
 }
 
 /* Modal */
 .modal {
   position: fixed;
-  top:0; left:0;
-  width:100%; height:100%;
+  inset: 0;
   background: rgba(0,0,0,0.7);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1500;
+}
+.modal-card {
+  background: rgba(20,20,35,0.9);
+  border-radius: 14px;
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: 0 0 20px rgba(0,255,255,0.2);
 }
 .modal.hidden { display: none; }
-.modal-card {
-  background:#111;
-  padding:20px;
-  border-radius:10px;
-  text-align:center;
+
+.free-key {
+  margin-top: 1rem;
 }
-.modal-card button { margin:5px; }
+.free-hint {
+  font-size: 13px;
+  margin: -8px 0 12px 0;
+  color: #90caf9;
+  text-shadow: 0 0 6px rgba(0,249,255,0.6);
+}
