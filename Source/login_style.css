@@ -1,192 +1,210 @@
-/* ===== Font cyberpunk ===== */
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=Rajdhani:wght@400;600&display=swap');
-
-/* ===== Reset ===== */
-* { margin: 0; padding: 0; box-sizing: border-box; }
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
 body, html {
   width: 100%;
   height: 100%;
+  font-family: "Poppins", sans-serif;
+  overflow: hidden;
   background: #000;
   color: #fff;
-  font-family: 'Orbitron', sans-serif;
-  letter-spacing: 0.5px;
-  overflow: hidden;
 }
 
-/* ===== Canvas 3D ===== */
-#bg {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100vw; height: 100vh;
-  z-index: 0;
-  background: black;
-}
-
-/* ===== Intro Logo ===== */
+/* Intro Logo */
 #intro-logo {
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 3;
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at center, #111 0%, #000 100%);
+  z-index: 2000;
 }
 #intro-logo h1 {
   font-size: 3rem;
-  font-weight: 800;
+  font-weight: 700;
+  letter-spacing: 4px;
   color: #00f9ff;
-  text-shadow: 0 0 25px #00f9ff, 0 0 50px #00c4cc;
-  letter-spacing: 2px;
-  text-align: center;
+  text-shadow: 0 0 10px #00f9ff, 0 0 20px #00f9ff, 0 0 40px #0077ff;
+  animation: pulse 2s infinite alternate;
+}
+@keyframes pulse {
+  from { text-shadow: 0 0 6px #00f9ff, 0 0 12px #00f9ff; }
+  to   { text-shadow: 0 0 20px #00f9ff, 0 0 50px #0077ff; }
 }
 
-/* ===== Login Container ===== */
+/* Background canvas */
+#bg {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: -1;
+}
+
+/* Login container */
 #login-container {
   position: relative;
-  z-index: 2;
-  width: 360px;
-  margin: 8% auto;
-  padding: 28px 24px;
-  background: rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  z-index: 100;
+}
+.hidden { display: none; }
+
+/* Glass card */
+.glass-card {
+  background: rgba(15, 15, 25, 0.65);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 16px;
-  box-shadow: 0 0 25px rgba(0,249,255,0.4);
+  padding: 2rem;
+  width: 320px;
   text-align: center;
-  backdrop-filter: blur(6px);
+  box-shadow: 0 0 20px rgba(0,255,255,0.2);
+  animation: float 6s ease-in-out infinite alternate;
 }
-
-#login-container h2 {
+@keyframes float {
+  from { transform: translateY(-2px); }
+  to { transform: translateY(6px); }
+}
+.glass-card h2 {
+  margin-bottom: 1rem;
   font-size: 1.5rem;
-  font-weight: 600;
-  margin-bottom: 18px;
   color: #00f9ff;
-  text-shadow: 0 0 12px #00c4cc;
+  text-shadow: 0 0 8px #00f9ff;
 }
 
-/* ===== Input ===== */
-#login-container input {
+/* Input */
+input {
   width: 100%;
   padding: 12px;
-  margin: 12px 0;
+  border-radius: 8px;
   border: none;
-  border-radius: 10px;
-  font-size: 15px;
-  font-family: 'Rajdhani', sans-serif;
   outline: none;
-  text-align: center;
-  background: #111;
+  background: rgba(255,255,255,0.1);
   color: #fff;
-  box-shadow: inset 0 0 8px rgba(0,249,255,0.4);
+  font-size: 14px;
+  margin-bottom: 1rem;
+  transition: all 0.3s ease;
 }
-#login-container input:focus {
-  box-shadow: 0 0 12px #00f9ff;
-  border: 1px solid #00f9ff;
+input:focus {
+  background: rgba(255,255,255,0.2);
+  box-shadow: 0 0 8px #00f9ff;
 }
 
-/* ===== Free + VIP Hint ===== */
-.free-hint, .vip-hint {
-  font-size: 13px;
-  margin: 6px 0 12px 0;
+/* Buttons */
+.btn, .btn-outline, .btn-link {
+  display: inline-block;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn {
+  background: linear-gradient(135deg, #00f9ff, #0066ff);
+  border: none;
+  color: #000;
+}
+.btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 10px #00f9ff;
+}
+
+.btn-outline {
+  border: 1px solid #00f9ff;
+  background: transparent;
+  color: #00f9ff;
+}
+.btn-outline:hover {
+  background: rgba(0, 249, 255, 0.15);
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: #4FC3F7;
+  font-size: 14px;
+  text-decoration: underline;
+  padding: 6px 12px;
+}
+
+/* Group */
+.btn-group {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 1rem;
+}
+
+/* Loader */
+.loader {
+  width: 26px;
+  height: 26px;
+  margin: 10px auto;
+  border: 3px solid #00f9ff;
+  border-top: 3px solid transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Status */
+#status-text {
+  margin-top: 8px;
+  font-size: 14px;
+  color: #eee;
+  min-height: 20px;
+}
+
+/* Modal */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1500;
+}
+.modal-card {
+  background: rgba(20,20,35,0.9);
+  border-radius: 14px;
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: 0 0 20px rgba(0,255,255,0.2);
+}
+.modal.hidden { display: none; }
+
+.free-key {
+  margin-top: 1rem;
 }
 .free-hint {
+  font-size: 13px;
+  margin: -8px 0 12px 0;
   color: #90caf9;
   text-shadow: 0 0 6px rgba(0,249,255,0.6);
 }
 .vip-hint {
+  font-size: 13px;
+  margin-top: -4px;
+  margin-bottom: 12px;
   color: #ffb74d;
-  text-shadow: 0 0 6px rgba(255,183,77,0.7);
+  text-shadow: 0 0 6px rgba(255, 183, 77, 0.7);
 }
 .vip-hint a {
-  color: #ffd54f;
+  color: #90caf9;
   font-weight: bold;
   text-decoration: none;
 }
 .vip-hint a:hover {
   text-decoration: underline;
-}
-
-/* ===== Buttons ===== */
-.btn-group {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-  margin-bottom: 10px;
-}
-
-#login-container button {
-  flex: 1;
-  padding: 10px 16px;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  font-weight: bold;
-  font-family: 'Orbitron', sans-serif;
-  background: #00f9ff;
-  color: #000;
-  transition: 0.3s;
-}
-#login-container button:hover {
-  background: #00c4cc;
-  box-shadow: 0 0 12px #00f9ff;
-}
-#login-container button.secondary {
-  width: 100%;
-  margin-top: 10px;
-  background: #222;
-  color: #00f9ff;
-  border: 1px solid #00f9ff;
-}
-#login-container button.secondary:hover {
-  background: #00f9ff;
-  color: #000;
-}
-
-/* ===== Loader + Status ===== */
-#loader {
-  margin: 10px 0;
-  font-size: 14px;
-  color: #fff176;
-}
-#status-text {
-  font-size: 13px;
-  min-height: 16px;
-  margin-top: 4px;
-  color: #eee;
-}
-
-/* ===== Modal ===== */
-.modal {
-  position: fixed;
-  top:0; left:0;
-  width:100%; height:100%;
-  background: rgba(0,0,0,0.7);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  z-index: 5;
-}
-.modal.hidden { display: none; }
-
-.modal-card {
-  background:#111;
-  padding:20px;
-  border-radius:10px;
-  text-align:center;
-  width: 280px;
-  box-shadow: 0 0 18px rgba(0,249,255,0.4);
-}
-.modal-card h3 {
-  margin-bottom: 12px;
-  color: #00f9ff;
-}
-.modal-card button {
-  margin:5px;
-  padding:8px 14px;
-  border:none;
-  border-radius:8px;
-  background:#00f9ff;
-  color:#000;
-  cursor:pointer;
-  font-family: 'Orbitron', sans-serif;
-}
-.modal-card button:hover {
-  background:#00c4cc;
 }
