@@ -38,8 +38,18 @@
 <!-- DANH MỤC: HIỆU CHỈNH (TWEAK)                           -->
 <!-- category="tweak"                                      -->
 <!-- ======================================================= -->
-<command alias="mediumtouch" vip="false" category="tweak" order="10">
-<name>Cảm Ứng Vừa</name>
+<command alias="mediumtouchv1" vip="false" category="tweak" order="10">
+<name>Cảm Ứng Vừa Cấp 1</name>
+<description>Tinh chỉnh độ nhạy cảm ứng ở mức vừa phải.</description>
+<type>script</type>
+</command>
+<command alias="mediumtouchv2" vip="false" category="tweak" order="11">
+<name>Cảm Ứng Vừa Cấp 2</name>
+<description>Tinh chỉnh độ nhạy cảm ứng ở mức vừa phải.</description>
+<type>script</type>
+</command>
+<command alias="mediumtouch" vip="false" category="tweak" order="12">
+<name>Cảm Ứng Vừa Cấp 3</name>
 <description>Tinh chỉnh độ nhạy cảm ứng ở mức vừa phải.</description>
 <type>script</type>
 </command>
@@ -74,8 +84,13 @@
 <type>script</type>
 </command>
 <command alias="giam20" vip="false" category="tweak" order="71">
-<name>Giảm độ phân giải màn hình 20%</name>
+<name>Giảm độ phân giải màn hình 20% (Giảm Nhạy)</name>
 <description>Giảm lag đáng kể.</description>
+<type>script</type>
+</command>
+<command alias="tang20" vip="false" category="tweak" order="72">
+<name>Tăng Độ Phân Giải 20% (Tăng Nhạy)</name>
+<description>Tăng Độ Phân Giải 20%.</description>
 <type>script</type>
 </command>
 <command alias="fps90" vip="false" category="tweak" order="80">
@@ -120,11 +135,15 @@
 <type>script</type>
 </command>
 <command alias="internet" vip="true" category="tips" order="14">
-<name>Tăng tốc mạng và wifi</name>
+<name>Tăng Tốc Mạng Và Wifi</name>
 <description>Tăng tốc mạng và wifi.</description>
 <type>script</type>
 </command>
-
+<command alias="volum" vip="true" category="tips" order="15">
+<name>Tối Ưu Âm Thanh </name>
+<description>Tối Ưu Âm Thanh.</description>
+<type>script</type>
+</command>
 <!-- ======================================================= -->
 <!-- DANH MỤC: HỆ THỐNG (SYSTEM)                            -->
 <!-- category="system"                                     -->
@@ -163,6 +182,11 @@
 </command>
 <command alias="resetall" vip="false" category="system" order="50">
 <name>Khôi Phục Các Lệnh Module Tùm Lum</name>
+<description>Reset lại các thay đổi về mặc định (Lệnh Nguy Hiểm).</description>
+<type>script</type>
+</command>
+<command alias="resetsystem" vip="false" category="system" order="51">
+<name>Khôi Phục Các Lệnh Module Có Trong Data System</name>
 <description>Reset lại các thay đổi về mặc định (Lệnh Nguy Hiểm).</description>
 <type>script</type>
 </command>
@@ -208,6 +232,12 @@
 <type>redirect</type>
 <url>https://nettruyen1905.com/</url>
 </command>
+<command alias="goto-anime" vip="true" category="online_utility">
+<name>Kênh Anime 3D Hoạt Hình Trung Quốc</name>
+<description>Truyện tranh.</description>
+<type>redirect</type>
+<url>https://animehay.sbs/</url>
+</command>
 <!-- DANH MỤC: CÔNG CỤ NÂNG CAO (ADVANCED TOOLS)           -->
 <!-- ======================================================= -->
 <command
@@ -236,7 +266,7 @@ order="10">
     <name>Chỉ Cập Nhật Scripts</name>
     <description>Tải và cài đặt lại bộ script gốc.</description>
     <type>unzip_from_url</type> 
-    <url>https://github.com/tangphathackers/TTP-AI-WEB/archive/refs/heads/main.zip</url>
-    <dest>/sdcard/TTP-WEB/scripts/</dest>
+    <url>https://github.com/tangphathackers/TTP-AI/releases/download/v4.0.0/TTP-WEB.zip</url>
+    <dest>/sdcard/TTP-WEB/</dest>
 </command>
 </commandList>

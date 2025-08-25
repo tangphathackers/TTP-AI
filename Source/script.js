@@ -155,7 +155,7 @@ const button = document.createElement('button');
 button.id = `ttp-${command.alias}`;
 button.className = 'button';
 button.textContent = command.name;
-if (command.alias === 'resetall' || command.alias === 'reboot') {
+if (command.alias === 'resetall' || command.alias === 'reboot') || command.alias === 'resetsystem') {
 button.classList.add('button-danger');
 }
 if (command.isVip) {
@@ -175,7 +175,7 @@ button.addEventListener('mouseleave', endPress);
 button.addEventListener('touchstart', startPress, { passive: true });
 button.addEventListener('touchend', endPress);
 button.addEventListener('click', () => {
-if (command.alias === 'resetall' || command.alias === 'reboot') {
+if (command.alias === 'resetall' || command.alias === 'reboot') || command.alias === 'resetsystem') {
 if (!confirm(`Hành động "${command.name}" có thể gây nguy hiểm. Bạn có chắc chắn?`)) {
 return;
 }
