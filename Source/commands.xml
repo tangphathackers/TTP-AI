@@ -263,7 +263,7 @@ order="10">
     <name>Cập Nhật Toàn Bộ</name>
     <description>Tải và cài đặt phiên bản TTP-WEB mới nhất.</description>
     <type>unzip_from_url</type>
-    <url>https://github.com/tangphathackers/TTP-AI/releases/download/v4.0.0/TTP-WEB.zip</url>
+    <url>https://github.com/tangphathackers/TTP-AI/releases/download/v5.0.0/TTP-WEB.zip</url>
     <dest>/sdcard/TTP-WEB/</dest>
 </command>
 
@@ -271,7 +271,7 @@ order="10">
     <name>Chỉ Cập Nhật Scripts</name>
     <description>Tải và cài đặt lại bộ script gốc.</description>
     <type>unzip_from_url</type> 
-    <url>https://github.com/tangphathackers/TTP-AI/releases/download/v4.0.0/TTP-WEB.zip</url>
+    <url>https://github.com/tangphathackers/TTP-AI/releases/download/v5.0.0/TTP-WEB.zip</url>
     <dest>/sdcard/TTP-WEB/</dest>
 </command>
 </commandList>
