@@ -104,7 +104,12 @@
 <type>script</type>
 </command>
 <command alias="cuongche" vip="false" category="auto" order="01" daemon="true">
-<name>Tự Động Tối Ưu Theo Thời Gian Thực</name>
+<name>Tự Động Tối Ưu Theo Thời Gian Thực (Gốc)</name>
+<description>Tự động chuyển đổi các chế độ gaming cân bằng và tiết kiệm. Lưu ý không dùng các bảo mật như màn hình và vân tay. Vì nó sẽ không cho hoạt động nền.</description>
+<type>script</type>
+</command>
+<command alias="cuongche1" vip="false" category="auto" order="02" daemon="true">
+<name>Tự Động Tối Ưu Theo Thời Gian Thực (Bản Mạnh)</name>
 <description>Tự động chuyển đổi các chế độ gaming cân bằng và tiết kiệm. Lưu ý không dùng các bảo mật như màn hình và vân tay. Vì nó sẽ không cho hoạt động nền.</description>
 <type>script</type>
 </command>
