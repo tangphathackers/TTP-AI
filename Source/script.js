@@ -227,7 +227,8 @@ alert("Không thể tải danh sách tính năng từ server. Vui lòng thử l�
 const fetchDeviceInfo = async () => {
     try {
         const details = await SecureComms.getDeviceDetails();
-        let deviceInfoHTML = `<b>Thiết bị:</b> ${details["ro.product.manufacturer"]} ${details["ro.product.model"]}`;
+        let deviceInfoHTML = `<b>Dùng xong module nhớ bấm tắt server nếu máy yếu</b>`;
+        deviceInfoHTML = `<b>Thiết bị:</b> ${details["ro.product.manufacturer"]} ${details["ro.product.model"]}`;
         deviceInfoHTML += `<br><b>Phiên bản Android:</b> ${details["ro.build.version.release"]} (SDK ${details["ro.build.version.sdk"]})`;
         deviceInfoHTML += `<br><b>Kiến trúc CPU:</b> ${details["ro.product.cpu.abi"]}`;
         
