@@ -224,28 +224,29 @@ alert("Không thể tải danh sách tính năng từ server. Vui lòng thử l�
 }
 };
 // --- SYSTEM MONITORING & OTHER FEATURES ---
-const fetchDeviceInfo = async () => {
-    try {
-        const details = await SecureComms.getDeviceDetails();
-        let deviceInfoHTML = `<b>Dùng xong module nhớ bấm tắt server nếu máy yếu</b>`;
-        deviceInfoHTML = `<b>Thiết bị:</b> ${details["ro.product.manufacturer"]} ${details["ro.product.model"]}`;
-        deviceInfoHTML += `<br><b>Phiên bản Android:</b> ${details["ro.build.version.release"]} (SDK ${details["ro.build.version.sdk"]})`;
-        deviceInfoHTML += `<br><b>Kiến trúc CPU:</b> ${details["ro.product.cpu.abi"]}`;
-        
-        if (details["android_id"]) {
-            deviceInfoHTML += `<br><b>Android ID:</b> ${details["android_id"]}`;
-        }
-        
-        deviceInfoHTML += `<br><b>Mật độ điểm ảnh:</b> ${details["ro.sf.lcd_density"]} DPI`;
+const fetchDeviceInfo = async () => {  
+    try {  
+        const details = await SecureComms.getDeviceDetails();  
+        let deviceInfoHTML = `<b>Dùng xong module nhớ bấm tắt server nếu máy yếu</b>`;  
 
-        if (details["GLES_Version"]) {
-            deviceInfoHTML += `<br><b>GLES Version:</b> ${details["GLES_Version"]}`;
-        }
-
-        refs.deviceInfoDiv.innerHTML = deviceInfoHTML;
-    } catch (e) {
-        refs.deviceInfoDiv.textContent = 'Lỗi khi tải thông tin thiết bị.';
-    }
+        deviceInfoHTML += `<br><b>Thiết bị:</b> ${details["ro.product.manufacturer"]} ${details["ro.product.model"]}`;  
+        deviceInfoHTML += `<br><b>Phiên bản Android:</b> ${details["ro.build.version.release"]} (SDK ${details["ro.build.version.sdk"]})`;  
+        deviceInfoHTML += `<br><b>Kiến trúc CPU:</b> ${details["ro.product.cpu.abi"]}`;  
+          
+        if (details["android_id"]) {  
+            deviceInfoHTML += `<br><b>Android ID:</b> ${details["android_id"]}`;  
+        }  
+          
+        deviceInfoHTML += `<br><b>Mật độ điểm ảnh:</b> ${details["ro.sf.lcd_density"]} DPI`;  
+  
+        if (details["GLES_Version"]) {  
+            deviceInfoHTML += `<br><b>GLES Version:</b> ${details["GLES_Version"]}`;  
+        }  
+  
+        refs.deviceInfoDiv.innerHTML = deviceInfoHTML;  
+    } catch (e) {  
+        refs.deviceInfoDiv.textContent = 'Lỗi khi tải thông tin thiết bị.';  
+    }  
 };
 // TÌM VÀ THAY THẾ HÀM NÀY
 const updateSystemStats = async () => {
