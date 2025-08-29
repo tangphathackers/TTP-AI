@@ -48,22 +48,23 @@
   function onWindowResize() { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); composer.setSize(window.innerWidth, window.innerHeight); }
 
   function animate() {
-    requestAnimationFrame(animate);
-    const time = Date.now();
-    
-    // Animation quỹ đạo của các khối (không đổi)
-    const orbitTime=time*1e-4;dataBlocks.forEach(b=>{b.rotation.y+=.002;b.position.x=b.userData.initialPos.x*Math.cos(orbitTime+100*b.userData.orbitSpeed)-b.userData.initialPos.z*Math.sin(orbitTime+100*b.userData.orbitSpeed);b.position.z=b.userData.initialPos.x*Math.sin(orbitTime+100*b.userData.orbitSpeed)+b.userData.initialPos.z*Math.cos(orbitTime+100*b.userData.orbitSpeed)});
-    if(starField) starField.rotation.y += 0.0001;
-    
-    // === THAY ĐỔI LỚN: CAMERA DI CHUYỂN THEO CHUỘT ===
-    // Điều này chỉ ảnh hưởng đến cảnh 3D trên canvas
-    camera.position.x += (mouse.x * 5 - camera.position.x) * 0.05;
-    camera.position.y += (mouse.y * 5 - camera.position.y) * 0.05;
-    camera.lookAt(scene.position);
-    // ===============================================
-
-    composer.render();
-  }
+  requestAnimationFrame(animate);
+  const time = Date.now();
+  
+  // Animation quỹ đạo của các khối
+  dataBlocks.forEach((b) => {
+    b.rotation.y += 0.002;
+    b.position.x = b.userData.initialPos.x * Math.cos(time * 0.001 + b.userData.orbitSpeed) - b.userData.initialPos.z * Math.sin(time * 0.001 + b.userData.orbitSpeed);
+    b.position.z = b.userData.initialPos.x * Math.sin(time * 0.001 + b.userData.orbitSpeed) + b.userData.initialPos.z * Math.cos(time * 0.001 + b.userData.orbitSpeed);
+  });
+  
+  // Thêm hiệu ứng chuyển động cho camera
+  camera.position.x += (mouse.x * 5 - camera.position.x) * 0.05;
+  camera.position.y += (mouse.y * 5 - camera.position.y) * 0.05;
+  camera.lookAt(scene.position);
+  
+  composer.render();
+}
   
   // Hàm Warp Effect không đổi
   window.triggerWarpEffect=function(){if(!window.gsap)return;gsap.to(camera,{fov:140,duration:1.2,ease:"power2.in",onUpdate:()=>camera.updateProjectionMatrix()});dataBlocks.forEach(b=>{gsap.to(b.position,{z:b.position.z+50,duration:1.2,ease:"power2.in"})});if(starField)gsap.to(starField.material,{size:1.5,duration:1.2,ease:"power2.in"})};
