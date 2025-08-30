@@ -1,4 +1,4 @@
-// login_main.js — Phiên bản Hoàn thiện (Đã loại bỏ hoàn toàn Âm thanh, cải thiện UX thông báo)
+// login_main.js — Phiên bản Hoàn thiện (Đã loại bỏ hoàn toàn Âm thanh)
 
 document.addEventListener("DOMContentLoaded", () => {
   // --- 1. Khởi tạo Scene & Intro Animation ---
@@ -27,25 +27,25 @@ document.addEventListener("DOMContentLoaded", () => {
   const verifyBtn = document.getElementById("verifyBtn"), keyInput = document.getElementById("key"), loader = document.getElementById("loader"), statusText = document.getElementById("status-text"), registerBtn = document.getElementById("registerBtn"), getFreeKeyBtn = document.getElementById("getFreeKeyBtn"), linkModal = document.getElementById("linkModal"), closeModalBtn = document.getElementById("closeModalBtn"), mainLinkBtn = document.getElementById("mainLinkBtn"), fallback1LinkBtn = document.getElementById("fallback1LinkBtn"), fallback2LinkBtn = document.getElementById("fallback2LinkBtn");
 
   
-  // --- 3. Logic & Hàm (ĐÃ LOẠI BỎ ÂM THANH & CẢI THIỆN THÔNG BÁO) ---
+  // --- 3. Logic & Hàm (ĐÃ LOẠI BỎ ÂM THANH) ---
 
   // Hiệu ứng lỗi hình ảnh (không có âm thanh)
-  function triggerErrorEffect(message = "Lỗi xác thực!") { 
-      statusText.textContent = "❌ " + message;
-      statusText.style.color = 'var(--error-color)'; // Dùng màu error từ CSS
+  function triggerErrorEffect() { 
+      statusText.style.color = 'var(--error-glow)'; 
       keyInput.classList.add('error'); 
-      gsap.to(keyInput, { x: -5, duration: 0.1, ease: "power1.inOut", repeat: 3, yoyo: true, onComplete: () => {
-          gsap.to(keyInput, { x: 0, duration: 0.1 }); // Đảm bảo về vị trí cũ
+      setTimeout(() => { 
           keyInput.classList.remove('error'); 
-          // Không reset statusText màu ngay để người dùng kịp đọc
-      }});
+          statusText.style.color = ''; 
+      }, 1000); 
   }
   
-  // Logic xác thực (không có âm thanh, loại bỏ alert)
+  // Logic xác thực (không có âm thanh)
   const verifyKey = async () => {
     const key = keyInput.value.trim();
     if (!key) {
-      triggerErrorEffect("Vui lòng nhập key!");
+      statusText.textContent = "❗ Vui lòng nhập key!";
+      triggerErrorEffect();
+      alert("Lỗi: Vui lòng nhập key của bạn!");
       return;
     }
     setLoading(true, "Đang xác thực...");
@@ -66,26 +66,14 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (err) {
       setLoading(false, "");
       const errorMessage = err?.message || err;
-      triggerErrorEffect(errorMessage); // Dùng hàm triggerErrorEffect
+      statusText.textContent = "❌ Lỗi: " + errorMessage;
+      triggerErrorEffect();
+      alert("Lỗi xác thực:\n" + errorMessage);
     }
   };
 
   // Các hàm còn lại giữ nguyên
-  let activeBase=null;const savedBase=localStorage.getItem("ttp_server_base")||"";const candidates=[];location.origin&&location.origin.startsWith("http")&&candidates.push(location.origin);savedBase&&candidates.push(savedBase);candidates.push("http://127.0.0.1:8080");candidates.push("https://127.0.0.1:8080");candidates.push("http://localhost:8080");const headersJSON={"Content-Type":"application/json"};const redirectToDashboard=()=>{if(window.triggerWarpEffect)window.triggerWarpEffect();const base=activeBase||(location.origin&&location.origin.startsWith("http")?location.origin:"http://127.0.0.1:8080");const url=base.replace(/\/+$/,"")+"/dashboard";gsap.to("#login-form",{opacity:0,scale:.9,duration:.8,ease:"power2.in"});setTimeout(()=>{const overlay=document.createElement("div");overlay.style.cssText="position:fixed; top:0; left:0; width:100%; height:100%; background:#000; opacity:0; z-index:9999; transition:opacity 0.5s ease;";document.body.appendChild(overlay);requestAnimationFrame(()=>{overlay.style.opacity=1});setTimeout(()=>{try{window.location.replace(url)}catch(e){}setTimeout(()=>{window.location.href=url},200)},500)},800)};const apiFetch=async(t,e={})=>{let s=null;for(const o of candidates)try{const r=await fetch(o+t,{...e,headers:{...e.headers||{},...headersJSON}});return activeBase=o,r}catch(t){s=t}throw s||new Error("Không thể kết nối server")},setLoading=(t,e="")=>{loader.classList.toggle("hidden",!t);verifyBtn.classList.toggle("hidden",t);statusText.textContent=e};const getUUID=async()=>{const t=localStorage.getItem("ttp_uuid");if(t)return t;statusText.textContent="Đang lấy ID thiết bị...";try{const t=await apiFetch("/ttp-ai-exec-unprotected-get-id",{method:"POST",body:JSON.stringify({cmd:"settings get secure android_id"})}),e=await t.json().catch(()=>({}));if(t.ok&&e&&e.stdout){const t=String(e.stdout).trim();return localStorage.setItem("ttp_uuid",t),t}throw new Error("server không trả ID")}catch(t){const e="local-"+function(){const t=new Uint8Array(16);crypto.getRandomValues(t),t[6]=15&t[6]|64,t[8]=63&t[8]|128;const e=[...t].map(t=>t.toString(16).padStart(2,"0"));return`${e[0]}${e[1]}${e[2]}${e[3]}-${e[4]}${e[5]}-${e[6]}${e[7]}-${e[8]}${e[9]}-${e.slice(10).join("")}`();return localStorage.setItem("ttp_uuid",e),statusText.textContent="Không lấy được android_id, dùng ID tạm.",e}};const registerDevice=async()=>{if(localStorage.getItem("ttp_registration_sent")) {
-        statusText.textContent = "✅ Yêu cầu đăng ký đã được gửi trước đó.";
-        statusText.style.color = '#4ade80';
-        return;
-    }
-    setLoading(!0,"Đang gửi yêu cầu đăng ký...");
-    try{
-      const t=await getUUID(),e=await apiFetch("/register",{method:"POST",body:JSON.stringify({id:t})}),s=await e.json().catch(()=>({}));
-      if(!e.ok)throw new Error(s?.message||"Lỗi không xác định");
-      localStorage.setItem("ttp_registration_sent","true");
-      statusText.textContent = "✅ " + (s.message||"Đã gửi yêu cầu đăng ký thành công.");
-      statusText.style.color = '#4ade80';
-    }catch(t){
-      triggerErrorEffect("Lỗi đăng ký: "+(t?.message||t));
-    }finally{setLoading(!1)}};
+  let activeBase=null;const savedBase=localStorage.getItem("ttp_server_base")||"";const candidates=[];location.origin&&location.origin.startsWith("http")&&candidates.push(location.origin);savedBase&&candidates.push(savedBase);candidates.push("http://127.0.0.1:8080");candidates.push("https://127.0.0.1:8080");candidates.push("http://localhost:8080");const headersJSON={"Content-Type":"application/json"};const redirectToDashboard=()=>{if(window.triggerWarpEffect)window.triggerWarpEffect();const base=activeBase||(location.origin&&location.origin.startsWith("http")?location.origin:"http://127.0.0.1:8080");const url=base.replace(/\/+$/,"")+"/dashboard";gsap.to("#login-form",{opacity:0,scale:.9,duration:.8,ease:"power2.in"});setTimeout(()=>{const overlay=document.createElement("div");overlay.style.cssText="position:fixed; top:0; left:0; width:100%; height:100%; background:#000; opacity:0; z-index:9999; transition:opacity 0.5s ease;";document.body.appendChild(overlay);requestAnimationFrame(()=>{overlay.style.opacity=1});setTimeout(()=>{try{window.location.replace(url)}catch(e){}setTimeout(()=>{window.location.href=url},200)},500)},800)};const apiFetch=async(t,e={})=>{let s=null;for(const o of candidates)try{const r=await fetch(o+t,{...e,headers:{...e.headers||{},...headersJSON}});return activeBase=o,r}catch(t){s=t}throw s||new Error("Không thể kết nối server")},setLoading=(t,e="")=>{loader.classList.toggle("hidden",!t);verifyBtn.classList.toggle("hidden",t);statusText.textContent=e};const getUUID=async()=>{const t=localStorage.getItem("ttp_uuid");if(t)return t;statusText.textContent="Đang lấy ID thiết bị...";try{const t=await apiFetch("/ttp-ai-exec-unprotected-get-id",{method:"POST",body:JSON.stringify({cmd:"settings get secure android_id"})}),e=await t.json().catch(()=>({}));if(t.ok&&e&&e.stdout){const t=String(e.stdout).trim();return localStorage.setItem("ttp_uuid",t),t}throw new Error("server không trả ID")}catch(t){const e="local-"+function(){const t=new Uint8Array(16);crypto.getRandomValues(t),t[6]=15&t[6]|64,t[8]=63&t[8]|128;const e=[...t].map(t=>t.toString(16).padStart(2,"0"));return`${e[0]}${e[1]}${e[2]}${e[3]}-${e[4]}${e[5]}-${e[6]}${e[7]}-${e[8]}${e[9]}-${e.slice(10).join("")}`();return localStorage.setItem("ttp_uuid",e),statusText.textContent="Không lấy được android_id, dùng ID tạm.",e}};const registerDevice=async()=>{if(localStorage.getItem("ttp_registration_sent"))return void alert("✅ Yêu cầu đăng ký đã được gửi trước đó.");setLoading(!0,"Đang gửi yêu cầu đăng ký...");try{const t=await getUUID(),e=await apiFetch("/register",{method:"POST",body:JSON.stringify({id:t})}),s=await e.json().catch(()=>({}));if(!e.ok)throw new Error(s?.message||"Lỗi không xác định");localStorage.setItem("ttp_registration_sent","true"),alert(s.message||"Đã gửi yêu cầu đăng ký.")}catch(t){alert("Lỗi đăng ký: "+(t?.message||t))}finally{setLoading(!1)}};
   
   verifyBtn.addEventListener("click",verifyKey);
   keyInput.addEventListener("keyup",t=>{"Enter"===t.key&&verifyKey()});
@@ -95,8 +83,5 @@ document.addEventListener("DOMContentLoaded", () => {
   linkModal.addEventListener("click",t=>{t.target===linkModal&&linkModal.classList.add("hidden")});
   mainLinkBtn.addEventListener("click",()=>window.open("https://yeumoney.com/BOi3E8","_blank"));
   fallback1LinkBtn.addEventListener("click",()=>window.open("https://link4m.com/fAZyNYQZ","_blank"));
-  fallback2LinkBtn.addEventListener("click",()=>{
-    triggerErrorEffect("Link dự phòng 2 chưa có hoặc đang bảo trì.");
-    linkModal.classList.add("hidden"); // Đóng modal sau khi thông báo
-  });
+  fallback2LinkBtn.addEventListener("click",()=>alert("Link dự phòng 2 chưa có!"));
 });
