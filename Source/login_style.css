@@ -1,15 +1,16 @@
-/* login_style.css - Phiên bản Tối giản Hoàn thiện (Đã đồng bộ Input và Button) */
+/* login_style.css - Phiên bản Tối giản Hoàn thiện (Đã đồng bộ Input và Button, cải thiện Glassmorphism và Floating Label) */
 
 /* === BẢNG MÀU MONOCHROME === */
 :root {
   --bg: #101010;
-  --glass-bg: rgba(16, 16, 16, 0.5); /* Nền kính tối, tăng nhẹ độ sáng */
+  --glass-bg: rgba(16, 16, 16, 0.6); /* Tăng nhẹ độ trong suốt */
   --text-primary: #F0F0F0;         
   --text-secondary: #A0A0A0;        
   --highlight-glow: #FFFFFF;        
   --border-color: rgba(255, 255, 255, 0.1);
   --border-focus: rgba(255, 255, 255, 0.5);
   --error-color: #ff6b6b;
+  --success-color: #4ade80;
 }
 
 /* === CÀI ĐẶT CƠ BẢN === */
@@ -22,7 +23,13 @@ body { font-family: 'Poppins', sans-serif; background-color: var(--bg); color: v
 @keyframes auroraFloat { from { transform: translateY(0) rotate(0deg) scale(1); } to { transform: translateY(-2vh) rotate(-10deg) scale(1.2); } }
 
 /* === KHUNG CHỨA VÔ HÌNH VÀ FORM === */
-.card-glass { background: transparent; backdrop-filter: none; border: none; box-shadow: none; border-radius: 20px; }
+.card-glass { 
+  background: var(--glass-bg); /* Áp dụng nền kính */
+  backdrop-filter: blur(15px); /* Tăng blur cho form chính */
+  border: 1px solid var(--border-color); /* Thêm viền */
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); /* Thêm bóng nhẹ */
+  border-radius: 20px; 
+}
 
 /* --- CÁC THÀNH PHẦN CON BÊN TRONG --- */
 .input-group { position: relative; }
@@ -35,39 +42,46 @@ body { font-family: 'Poppins', sans-serif; background-color: var(--bg); color: v
   backdrop-filter: blur(5px);
   color: var(--text-primary);
   transition: all 0.3s ease;
+  padding-top: 20px; /* Thêm padding trên để label có chỗ nổi */
+  padding-bottom: 8px; /* Giảm padding dưới nếu cần */
+  line-height: 1.5; /* Đảm bảo chiều cao dòng */
 }
 .input-neon.error { border-color: var(--error-color) !important; box-shadow: 0 0 15px rgba(255, 107, 107, 0.3) !important; }
 
-/* TRẠNG THÁI KHI FOCUS VÀO INPUT: Sáng trắng */
-.input-neon:focus + .input-label,
-.input-neon:not(:placeholder-shown) + .input-label {
-  opacity: 0; /* Mờ dần */
-  visibility: hidden; /* Biến mất hoàn toàn */
-}
-.input-neon.error {
-    border-color: var(--error-color) !important;
-    box-shadow: 0 0 15px rgba(255, 107, 107, 0.3) !important;
+/* TRẠNG THÁI KHI FOCUS VÀO INPUT: Sáng trắng và glow */
+.input-neon:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.2); /* Glow nhẹ khi focus */
+  outline: none; /* Bỏ outline mặc định của trình duyệt */
 }
 
+/* Label nổi */
 .input-label {
   position: absolute;
-  /* Đặt ở vị trí cuối cùng (khi đã nổi lên) */
-  top: -8px; 
-  left: 10px;
-  font-size: .75rem; 
-  
-  color: #94A3B8;
+  top: 0; 
+  left: 14px; /* Căn chỉnh vị trí label ban đầu */
+  font-size: 1rem; /* Kích thước ban đầu */
+  color: var(--text-secondary);
   padding: 0 4px;
   pointer-events: none;
-  opacity: 1; /* Hiện rõ */
+  opacity: 1; 
   visibility: visible;
-  /* Di chuyển và phóng to về vị trí ban đầu */
   transform-origin: left top;
-  transform: translateY(22px) scale(1.33);
-
-  /* Chỉ chuyển động transform và color để mượt nhất */
-  transition: transform 0.2s ease, color 0.2s ease;
+  transform: translateY(14px) scale(1); /* Vị trí ban đầu */
+  transition: transform 0.2s ease, color 0.2s ease, font-size 0.2s ease;
 }
+
+/* TRẠNG THÁI KHI INPUT ĐƯỢC ĐIỀN HOẶC FOCUS: LABEL NỔI LÊN */
+.input-neon:focus + .input-label,
+.input-neon:not(:placeholder-shown) + .input-label {
+  transform: translateY(-8px) scale(0.85); /* Nổi lên và thu nhỏ */
+  font-size: 0.75rem; /* Kích thước nhỏ hơn */
+  color: var(--highlight-glow); /* Màu sáng khi nổi */
+  background: var(--glass-bg); /* Nền cho label để không bị đè chữ */
+  padding: 0 6px;
+  border-radius: 4px;
+}
+
 
 /* TRẠNG THÁI MẶC ĐỊNH CỦA NÚT BẤM: Kính mờ tối, giống hệt Input */
 .btn-neon {
@@ -79,13 +93,20 @@ body { font-family: 'Poppins', sans-serif; background-color: var(--bg); color: v
   height: 52px;
   border-radius: 12px;
   backdrop-filter: blur(5px); /* Giống Input */
+  outline: none;
 }
 
 /* TRẠNG THÁI KHI HOVER VÀO NÚT BẤM: Sáng trắng, giống hệt Input Focus */
 .btn-neon:hover {
-  background: var(--border-color);
+  background: rgba(255, 255, 255, 0.05); /* Nền sáng hơn một chút */
   color: var(--highlight-glow);
-  border-color: var(--border-color);
+  border-color: var(--border-focus);
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.3); /* Glow mạnh hơn khi hover */
+  transform: translateY(-2px); /* Hiệu ứng nổi nhẹ */
+}
+.btn-neon:active {
+  transform: translateY(0); /* Nhấn xuống khi click */
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
 }
 /* ============================================== */
 
@@ -99,14 +120,15 @@ body { font-family: 'Poppins', sans-serif; background-color: var(--bg); color: v
 /* Modal */
 .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); display: grid; place-items: center; z-index: 100; }
 .modal-card { background: var(--glass-bg); backdrop-filter: blur(12px); border: 1px solid var(--border-color); box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3); border-radius: 16px; padding: 24px; position: relative; max-width: 320px; width: 100%; }
-.modal-close { position: absolute; top: 6px; right: 10px; font-size: 24px; color: var(--text-secondary); }
+.modal-close { position: absolute; top: 6px; right: 10px; font-size: 24px; color: var(--text-secondary); cursor: pointer; }
+.modal-close:hover { color: var(--highlight-glow); }
 
 /* Các nút trong Modal */
-.btn-solid, .btn-outline, .btn-outline-purple { padding: 10px; border-radius: 10px; font-weight: 600; transition: all 0.3s; }
+.btn-solid, .btn-outline, .btn-outline-purple { padding: 10px; border-radius: 10px; font-weight: 600; transition: all 0.3s; cursor: pointer; }
 .btn-solid { background: var(--highlight-glow); color: var(--bg); }
-.btn-solid:hover { transform: scale(1.05); }
+.btn-solid:hover { transform: scale(1.05); box-shadow: 0 0 15px rgba(255, 255, 255, 0.4); }
 .btn-outline, .btn-outline-purple { border: 1px solid var(--border-color); color: var(--text-secondary); background: transparent; }
-.btn-outline:hover, .btn-outline-purple:hover { border-color: var(--highlight-glow); color: var(--highlight-glow); }
+.btn-outline:hover, .btn-outline-purple:hover { border-color: var(--highlight-glow); color: var(--highlight-glow); box-shadow: 0 0 10px rgba(255, 255, 255, 0.2); }
 
 /* Loader */
 .abs-center { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
@@ -117,7 +139,7 @@ input:-webkit-autofill,
 input:-webkit-autofill:hover, 
 input:-webkit-autofill:focus, 
 input:-webkit-autofill:active {
-    -webkit-box-shadow: 0 0 0 30px #182133 inset !important; /* Dùng shadow để tô đè lên nền vàng */
-    -webkit-text-fill-color: #E5E7EB !important; /* Đảm bảo chữ vẫn màu trắng */
+    -webkit-box-shadow: 0 0 0 30px var(--glass-bg) inset !important; /* Dùng shadow để tô đè lên nền vàng */
+    -webkit-text-fill-color: var(--text-primary) !important; /* Đảm bảo chữ vẫn màu trắng */
     transition: background-color 5000s ease-in-out 0s; /* Ngăn Chrome đổi màu nền */
 }
