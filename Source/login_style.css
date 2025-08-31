@@ -1,123 +1,152 @@
-/* login_style.css - Phiên bản Tối giản Hoàn thiện (Đã đồng bộ Input và Button) */
+/* login_style.css - Phiên bản Vibrant + Text Animation */
 
-/* === BẢNG MÀU MONOCHROME === */
+/* --- TOÀN BỘ CSS GIỮ NGUYÊN NHƯ PHIÊN BẢN TRƯỚC --- */
+/* (Bảng màu, Body, Aurora, Card-Glass, Input, Button, Modal...) */
 :root {
-  --bg: #101010;
-  --glass-bg: rgba(16, 16, 16, 0.5); /* Nền kính tối, tăng nhẹ độ sáng */
-  --text-primary: #F0F0F0;         
-  --text-secondary: #A0A0A0;        
-  --highlight-glow: #FFFFFF;        
-  --border-color: rgba(255, 255, 255, 0.1);
-  --border-focus: rgba(255, 255, 255, 0.5);
-  --error-color: #ff6b6b;
+  --bg: #030419; 
+  --glass-bg: rgba(10, 8, 30, 0.55);
+  --text-primary: #F0F0F8;         
+  --text-secondary: #a0a0b8;        
+  --error-color: #ff5b5b;
+  --accent-primary-pink: #F72585;
+  --accent-secondary-cyan: #4CC9F0;
+  --aurora-gradient: linear-gradient(90deg, var(--accent-primary-pink), var(--accent-secondary-cyan));
+  --border-color: rgba(100, 100, 150, 0.2);
 }
 
-/* === CÀI ĐẶT CƠ BẢN === */
-body { font-family: 'Poppins', sans-serif; background-color: var(--bg); color: var(--text-primary); overflow: hidden; }
+body { 
+  font-family: 'Poppins', sans-serif; 
+  background-color: var(--bg); color: var(--text-primary); 
+  overflow: hidden; 
+}
+.aurora-layer { 
+  position: fixed; inset: 0; z-index: -2; 
+  background: radial-gradient(ellipse at 10% 20%, var(--accent-primary-pink) 0%, transparent 40%), radial-gradient(ellipse at 90% 80%, var(--accent-secondary-cyan) 0%, transparent 50%);
+  filter: blur(80px); opacity: 0.3;
+  animation: auroraFloat 20s ease-in-out infinite alternate; 
+}
+@keyframes auroraFloat { from { transform: translateY(0) rotate(0deg) scale(1); } to { transform: translateY(-5vh) rotate(15deg) scale(1.3); } }
+
+/* === TIÊU ĐỀ GRADIENT - ĐÂY LÀ PHẦN CẬP NHẬT === */
 .font-orbitron { font-family: 'Orbitron', sans-serif; }
-.glow-text { color: var(--highlight-glow); text-shadow: 0 0 10px rgba(255, 255, 255, 0.7); }
-
-/* === HIỆU ỨNG NỀN TINH TẾ === */
-.aurora-layer { position: fixed; inset: 0; z-index: -2; background: radial-gradient(circle at 20% 30%, rgba(255,255,255,0.04) 0, transparent 50%), radial-gradient(circle at 80% 70%, rgba(255,255,255,0.03) 0, transparent 40%); filter: blur(40px); animation: auroraFloat 30s ease-in-out infinite alternate; }
-@keyframes auroraFloat { from { transform: translateY(0) rotate(0deg) scale(1); } to { transform: translateY(-2vh) rotate(-10deg) scale(1.2); } }
-
-/* === KHUNG CHỨA VÔ HÌNH VÀ FORM === */
-.card-glass { background: transparent; backdrop-filter: none; border: none; box-shadow: none; border-radius: 20px; }
-
-/* --- CÁC THÀNH PHẦN CON BÊN TRONG --- */
-.input-group { position: relative; }
-
-/* TRẠNG THÁI MẶC ĐỊNH CỦA INPUT: Kính mờ tối */
-.input-neon {
-  width: 100%; padding: 14px; border-radius: 12px;
-  background: var(--glass-bg);
-  border: 1px solid var(--border-color);
-  backdrop-filter: blur(5px);
-  color: var(--text-primary);
-  transition: all 0.3s ease;
-}
-.input-neon.error { border-color: var(--error-color) !important; box-shadow: 0 0 15px rgba(255, 107, 107, 0.3) !important; }
-
-/* TRẠNG THÁI KHI FOCUS VÀO INPUT: Sáng trắng */
-.input-neon:focus + .input-label,
-.input-neon:not(:placeholder-shown) + .input-label {
-  opacity: 0; /* Mờ dần */
-  visibility: hidden; /* Biến mất hoàn toàn */
-}
-.input-neon.error {
-    border-color: var(--error-color) !important;
-    box-shadow: 0 0 15px rgba(255, 107, 107, 0.3) !important;
-}
-
-.input-label {
-  position: absolute;
-  /* Đặt ở vị trí cuối cùng (khi đã nổi lên) */
-  top: -8px; 
-  left: 10px;
-  font-size: .75rem; 
+.glow-text { 
+  background: var(--aurora-gradient);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
   
-  color: #94A3B8;
-  padding: 0 4px;
-  pointer-events: none;
-  opacity: 1; /* Hiện rõ */
-  visibility: visible;
-  /* Di chuyển và phóng to về vị trí ban đầu */
-  transform-origin: left top;
-  transform: translateY(22px) scale(1.33);
-
-  /* Chỉ chuyển động transform và color để mượt nhất */
-  transition: transform 0.2s ease, color 0.2s ease;
+  /* CẬP NHẬT */
+  background-size: 200% auto; /* Phóng to background để có không gian di chuyển */
+  animation: 
+    glow-animation 7s infinite alternate,
+    animate-gradient-text 7s linear infinite; /* Thêm animation mới */
+}
+/* Animation cũ */
+@keyframes glow-animation {
+  from { text-shadow: 0 0 15px rgba(247, 37, 133, 0.4), 0 0 25px rgba(76, 201, 240, 0.4); }
+  to   { text-shadow: 0 0 25px rgba(247, 37, 133, 0.7), 0 0 40px rgba(76, 201, 240, 0.7); }
+}
+/* THÊM MỚI: Animation di chuyển dải màu */
+@keyframes animate-gradient-text {
+  to { background-position: 200% center; }
 }
 
-/* TRẠNG THÁI MẶC ĐỊNH CỦA NÚT BẤM: Kính mờ tối, giống hệt Input */
-.btn-neon {
-  background: var(--glass-bg); /* Giống Input */
-  border: 1px solid var(--border-color); /* Giống Input */
-  color: var(--text-primary);
-  font-weight: 600;
-  transition: all 0.3s ease;
-  height: 52px;
-  border-radius: 12px;
-  backdrop-filter: blur(5px); /* Giống Input */
+/* === SỬA LỖI TƯƠNG TÁC CHUỘT VÀO CANVAS 3D === */
+/* === SỬA LỖI TƯƠNG TÁC CHUỘT (PHIÊN BẢN HOÀN THIỆN) === */
+#login-container {
+    pointer-events: none; /* Cho phép chuột xuyên qua container chính */
 }
 
-/* TRẠNG THÁI KHI HOVER VÀO NÚT BẤM: Sáng trắng, giống hệt Input Focus */
-.btn-neon:hover {
-  background: var(--border-color);
-  color: var(--highlight-glow);
-  border-color: var(--border-color);
+/* Bật lại khả năng nhận click cho các thành phần con quan trọng */
+#login-form,
+#music-player-container {
+    pointer-events: auto; 
 }
-/* ============================================== */
 
-/* === CÁC THÀNH PHẦN PHỤ (Không đổi) === */
-.link-minor { color: var(--text-secondary); transition: color 0.3s ease; }
-.link-minor:hover { color: var(--text-primary); }
-.free-hint strong { color: var(--highlight-glow); font-weight: 600; }
-.vip-hint a { color: var(--highlight-glow); font-weight: 600; text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.3s; }
-.vip-hint a:hover { border-color: var(--highlight-glow); }
-
-/* Modal */
-.modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); display: grid; place-items: center; z-index: 100; }
-.modal-card { background: var(--glass-bg); backdrop-filter: blur(12px); border: 1px solid var(--border-color); box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3); border-radius: 16px; padding: 24px; position: relative; max-width: 320px; width: 100%; }
+/* --- Các phần còn lại của CSS giữ nguyên y hệt phiên bản trước --- */
+.card-glass { background: transparent; backdrop-filter: none; border: none; box-shadow: none; border-radius: 20px; }
+.input-group { position: relative; }
+.input-neon, .btn-neon {
+  width: 100%; height: 52px; padding: 14px; border-radius: 12px; border: 1px solid var(--border-color);
+  background: var(--glass-bg); backdrop-filter: blur(5px);
+  color: var(--text-primary); transition: all 0.3s ease;
+}
+.input-neon:focus, .input-neon:hover {
+  outline: none; border-color: var(--accent-secondary-cyan); box-shadow: 0 0 20px rgba(76, 201, 240, 0.4);
+}
+.btn-neon { font-weight: 600; cursor: pointer; }
+.btn-neon:hover { color: white; border-color: var(--accent-secondary-cyan); background: rgba(76, 201, 240, 0.15); box-shadow: 0 0 25px rgba(76, 201, 240, 0.5); }
+.input-neon.error { border-color: var(--error-color) !important; box-shadow: 0 0 15px rgba(255, 91, 91, 0.5) !important; }
+.input-label { position: absolute; top: -8px; left: 10px; font-size: .75rem; color: #94A3B8; padding: 0 4px; pointer-events: none; opacity: 1; visibility: visible; transform-origin: left top; transform: translateY(22px) scale(1.33); transition: transform 0.2s ease, color 0.2s ease; }
+.input-neon:focus + .input-label,
+.input-neon:not(:placeholder-shown) + .input-label { opacity: 0; visibility: hidden; }
+.link-minor { color: var(--text-secondary); transition: all 0.3s; }
+.link-minor:hover { color: var(--accent-secondary-cyan); text-shadow: 0 0 8px var(--accent-secondary-cyan); }
+.free-hint strong, .vip-hint a { background: var(--aurora-gradient); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; font-weight: 600; text-decoration: none; background-size: 200% auto; animation: animate-gradient-text 5s linear infinite; } /* Cũng áp dụng cho hint */
+.modal { position: fixed; inset: 0; background: rgba(3, 4, 25, 0.6); backdrop-filter: blur(10px); display: grid; place-items: center; z-index: 100; }
+.modal-card { background: rgba(10, 8, 30, 0.8); backdrop-filter: blur(12px); border: 1px solid var(--border-color); border-radius: 16px; padding: 24px; position: relative; max-width: 320px; width: 100%; }
 .modal-close { position: absolute; top: 6px; right: 10px; font-size: 24px; color: var(--text-secondary); }
-
-/* Các nút trong Modal */
 .btn-solid, .btn-outline, .btn-outline-purple { padding: 10px; border-radius: 10px; font-weight: 600; transition: all 0.3s; }
-.btn-solid { background: var(--highlight-glow); color: var(--bg); }
-.btn-solid:hover { transform: scale(1.05); }
+.btn-solid { background: var(--aurora-gradient); color: var(--text-primary); border: none; }
+.btn-solid:hover { transform: scale(1.05); box-shadow: 0 0 15px var(--accent-primary-pink); }
 .btn-outline, .btn-outline-purple { border: 1px solid var(--border-color); color: var(--text-secondary); background: transparent; }
-.btn-outline:hover, .btn-outline-purple:hover { border-color: var(--highlight-glow); color: var(--highlight-glow); }
-
-/* Loader */
+.btn-outline:hover, .btn-outline-purple:hover { border-color: var(--accent-secondary-cyan); color: var(--accent-secondary-cyan); background: rgba(76, 201, 240, 0.1); }
 .abs-center { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
-.spinner { width: 30px; height: 30px; border: 4px solid var(--border-color); border-top-color: var(--highlight-glow); border-radius: 50%; animation: spin .9s linear infinite; }
+.spinner { width: 30px; height: 30px; border: 4px solid var(--border-color); border-top-color: var(--accent-secondary-cyan); border-radius: 50%; animation: spin .9s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
-/* Fix lỗi nền vàng tự điền của Chrome */
 input:-webkit-autofill,
 input:-webkit-autofill:hover, 
 input:-webkit-autofill:focus, 
 input:-webkit-autofill:active {
-    -webkit-box-shadow: 0 0 0 30px #182133 inset !important; /* Dùng shadow để tô đè lên nền vàng */
-    -webkit-text-fill-color: #E5E7EB !important; /* Đảm bảo chữ vẫn màu trắng */
-    transition: background-color 5000s ease-in-out 0s; /* Ngăn Chrome đổi màu nền */
+    -webkit-box-shadow: 0 0 0 30px #182133 inset !important;
+    -webkit-text-fill-color: var(--text-primary) !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
+/* Mở file login_style.css và thêm vào cuối cùng */
+
+/* === NÂNG CẤP: STYLE CHO KHUNG TRÌNH PHÁT NHẠC MỚI === */
+
+/* === NÂNG CẤP: FRAME NHẠC CÓ VIỀN CHẠY ÁNH SÁNG === */
+
+.music-player-frame {
+    width: 280px;
+    height: 180px;
+    position: relative;
+    border-radius: 14px; /* Tăng nhẹ để viền đẹp hơn */
+    padding: 2px; /* Khoảng trống cho lớp giả */
+    overflow: hidden; /* Quan trọng để animation không bị tràn ra ngoài */
+}
+
+/* Lớp giả để tạo hiệu ứng viền chạy */
+.music-player-frame::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(
+        transparent,
+        var(--accent-primary-pink),
+        var(--accent-secondary-cyan),
+        transparent 30%
+    );
+    animation: border-glow 4s linear infinite;
+    z-index: -1;
+}
+
+/* Keyframe cho animation viền chạy */
+@keyframes border-glow {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.music-player-frame iframe {
+    width: 100%;
+    height: 100%;
+    /* Thêm một lớp nền tối bên dưới iframe để viền nổi bật hơn */
+    background: #030419; 
+    border-radius: 12px;
+    position: relative; /* Đảm bảo iframe nằm trên lớp giả */
+    z-index: 1;
 }
