@@ -14,6 +14,11 @@
 <description>Chạy script Boost.sh cho các tác vụ nặng (yêu cầu VIP).</description>
 <type>script</type>
 </command>
+<command alias="deviceconfig" vip="false" category="optimize" order="21">
+<name>Tinh chỉnh full Device_config</name>
+<description>Tinh chỉnh full Device_config.</description>
+<type>script</type>
+</command>
 <command alias="muot" vip="false" category="optimize" order="30">
 <name>Làm Mượt</name>
 <description>Chạy script Muot.sh để tăng độ mượt giao diện.</description>
@@ -185,7 +190,7 @@
 <description>Tắt Chặn QC.</description>
 <type>script</type>
 </command>
-<command alias="resetall" vip="false" category="system" order="50">
+<command alias="resetall" vip="false" category="system" order="50" daemon="true">
 <name>Khôi Phục Các Lệnh Module Tùm Lum</name>
 <description>Reset lại các thay đổi về mặc định (Lệnh Nguy Hiểm).</description>
 <type>script</type>
