@@ -9,6 +9,11 @@
 <description>Chạy script Giamlag.sh để tối ưu hệ thống.</description>
 <type>script</type>
 </command>
+<command alias="preload" vip="true" category="optimize" order="11" daemon="true">
+<name>Preload</name>
+<description>Chạy script Preload để tối ưu hệ thống.</description>
+<type>script</type>
+</command>
 <command alias="boost" vip="false" category="optimize" order="20">
 <name>Tăng Hiệu Năng</name>
 <description>Chạy script Boost.sh cho các tác vụ nặng (yêu cầu VIP).</description>
