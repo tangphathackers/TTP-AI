@@ -1,7 +1,7 @@
 // login_3d.js — Phiên bản "Cosmic Rave v3"
 
 (function () {
-    if (!THREE || !THREE.EffectComposer) {
+    if (!THREE || !THREE.OrbitControls || !THREE.DragControls || !THREE.EffectComposer) {
 
         console.error("Thiếu thư viện Three.js hoặc Controls!");
         return;
