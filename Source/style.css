@@ -31,12 +31,15 @@ display: none;
 }
 /* --- 2. HIỆU ỨNG NỀN --- */
 body::before {
-content: '';
-position: fixed;
-top: 0; left: 0; width: 100%; height: 100%;
-background: var(--background-image) no-repeat center center/cover;
-filter: blur(15px) brightness(0.5);
-z-index: -2;
+    content: '';
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: var(--background-image) no-repeat center center/cover;
+    filter: blur(15px) brightness(0.5);
+    z-index: -2;
+    /* THÊM 2 DÒNG NÀY ĐỂ HẾT LAG TẬN GỐC: */
+    transform: translateZ(0); 
+    will-change: transform; 
 }
 #particleCanvas {
 position: fixed;
@@ -97,11 +100,6 @@ overflow: hidden;
     scrollbar-width: none;
     min-height: 0; 
     min-width: 0;
-    /* XÓA DÒNG NÀY: will-change: transform; */
-    
-    /* THÊM 2 DÒNG NÀY ĐỂ VUỐT MƯỢT TRÊN MOBILE: */
-    -webkit-overflow-scrolling: touch; 
-    overscroll-behavior-y: contain; 
 }
 
 .grid-column::-webkit-scrollbar { 
@@ -434,22 +432,35 @@ backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); color: var(--t
 @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
 @media (max-width: 1024px) {
     body { 
-        overflow: auto; 
+        overflow-x: hidden;
+        overflow-y: auto; 
         -webkit-overflow-scrolling: touch; 
-        overscroll-behavior-y: none; /* THÊM DÒNG NÀY */
     }
-    .main-container { height: auto; padding: 15px; }
-.main-container { height: auto; padding: 15px; }
-.main-grid { grid-template-columns: 1fr; height: auto; gap: 15px; }
-.glass-panel.chat-panel,
-.glass-panel.log-panel {
-min-height: 350px;
-max-height: 65vh;
-border-radius: 16px;
-display: flex;
-flex-direction: column;
+    .main-container { 
+        height: auto; 
+        padding: 15px; 
+        overflow: visible; 
+    }
+    .main-grid { 
+        grid-template-columns: 1fr; 
+        height: auto; 
+        gap: 15px; 
+        overflow: visible; /* Bắt buộc để body được cuộn */
+    }
+    .grid-column {
+        overflow: visible; /* TẮT cuộn lồng nhau để vuốt không bị cứng */
+        height: auto;
+    }
+    .glass-panel.chat-panel,
+    .glass-panel.log-panel {
+        min-height: 350px;
+        max-height: 65vh;
+        border-radius: 16px;
+        display: flex;
+        flex-direction: column;
+    }
 }
-}
+
 .button.executing {
 cursor: wait;
 }
