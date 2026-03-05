@@ -1,4 +1,4 @@
-/* --- TTP-AI Interface v30.2
+/* --- TTP-AI Interface v31
 /* --- 1. BIẾN TOÀN CỤC & THIẾT LẬP CHUNG --- */
 :root {
 color-scheme: light;
@@ -254,7 +254,6 @@ font-family: var(--font-mono);
 font-size: 0.85rem;
 word-break: break-word;
 -webkit-overflow-scrolling: touch;
-overscroll-behavior: contain;
 padding: 5px 10px;
 }
 .chat-container::-webkit-scrollbar, .command-log::-webkit-scrollbar, #logViewerContent::-webkit-scrollbar { width: 8px; }
