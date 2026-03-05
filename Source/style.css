@@ -96,8 +96,12 @@ overflow: hidden;
     overflow-y: auto;
     scrollbar-width: none;
     min-height: 0; 
-    will-change: transform;
     min-width: 0;
+    /* XÓA DÒNG NÀY: will-change: transform; */
+    
+    /* THÊM 2 DÒNG NÀY ĐỂ VUỐT MƯỢT TRÊN MOBILE: */
+    -webkit-overflow-scrolling: touch; 
+    overscroll-behavior-y: contain; 
 }
 
 .grid-column::-webkit-scrollbar { 
@@ -105,21 +109,21 @@ overflow: hidden;
 }
 /* --- 4. STYLE PANEL KÍNH MỜ --- */
 .glass-panel {
-background: var(--panel-bg);
-border: 1px solid var(--panel-border);
-border-radius: 24px;
-padding: 20px;
-backdrop-filter: blur(20px) saturate(180%);
--webkit-backdrop-filter: blur(20px) saturate(180%);
-box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-animation: fadeIn 0.5s ease-out forwards;
-opacity: 0;
-display: flex;
-flex-direction: column;
-min-height: 0;
-flex-shrink: 1;
-will-change: transform, opacity;
-overflow: hidden;
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    border-radius: 24px;
+    padding: 20px;
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    animation: fadeIn 0.5s ease-out forwards;
+    opacity: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    flex-shrink: 1;
+    overflow: hidden;
+    /* XÓA DÒNG NÀY: will-change: transform, opacity; */
 }
 .panel-title {
 font-size: 1.1rem;
@@ -136,9 +140,9 @@ word-break: break-word;
     display: grid;
     gap: 10px;    
     grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));   
-    will-change: contents; 
+    /* XÓA DÒNG NÀY: will-change: contents; */
 }
-/* TÌM VÀ CẬP NHẬT KHỐI NÀY */
+
 .button {
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid var(--panel-border);
@@ -150,12 +154,12 @@ word-break: break-word;
     border-radius: 12px;
     cursor: pointer;
     text-align: center;
-    transform: translateZ(0);
+    transform: translateZ(0); /* Dòng này đủ để GPU xử lý mượt rồi */
     transition: transform 0.15s cubic-bezier(0.2, 0, 0.38, 0.9),
     background-color 0.2s ease,
     box-shadow 0.2s ease;
-    will-change: transform, background-color;
     min-height: 48px; 
+    /* XÓA DÒNG NÀY: will-change: transform, background-color; */
 }
 .button:hover:not(:disabled) {
 background: rgba(255, 255, 255, 0.2);
@@ -429,7 +433,12 @@ backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); color: var(--t
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
 @media (max-width: 1024px) {
-body { overflow: auto; -webkit-overflow-scrolling: touch; }
+    body { 
+        overflow: auto; 
+        -webkit-overflow-scrolling: touch; 
+        overscroll-behavior-y: none; /* THÊM DÒNG NÀY */
+    }
+    .main-container { height: auto; padding: 15px; }
 .main-container { height: auto; padding: 15px; }
 .main-grid { grid-template-columns: 1fr; height: auto; gap: 15px; }
 .glass-panel.chat-panel,
