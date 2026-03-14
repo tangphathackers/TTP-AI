@@ -50,21 +50,11 @@ body {
   to { background-position: 200% center; }
 }
 
-/* === SỬA LỖI TƯƠNG TÁC CHUỘT VÀO CANVAS 3D === */
-/* === SỬA LỖI TƯƠNG TÁC CHUỘT (PHIÊN BẢN HOÀN THIỆN) === */
-#login-container {
-    pointer-events: none; /* Cho phép chuột xuyên qua container chính */
-}
-
-/* Bật lại khả năng nhận click cho các thành phần con quan trọng */
-#login-form,
-#music-player-container {
-    pointer-events: auto; 
-}
 
 /* --- Các phần còn lại của CSS giữ nguyên y hệt phiên bản trước --- */
 .card-glass { background: transparent; backdrop-filter: none; border: none; box-shadow: none; border-radius: 20px; }
 .input-group { position: relative; }
+
 .input-neon, .btn-neon {
   width: 100%; height: 52px; padding: 14px; border-radius: 12px; border: 1px solid var(--border-color);
   background: var(--glass-bg); backdrop-filter: blur(5px);
@@ -101,52 +91,13 @@ input:-webkit-autofill:active {
     -webkit-text-fill-color: var(--text-primary) !important;
     transition: background-color 5000s ease-in-out 0s;
 }
-/* Mở file login_style.css và thêm vào cuối cùng */
-
-/* === NÂNG CẤP: STYLE CHO KHUNG TRÌNH PHÁT NHẠC MỚI === */
-
-/* === NÂNG CẤP: FRAME NHẠC CÓ VIỀN CHẠY ÁNH SÁNG === */
-
-.music-player-frame {
-    width: 280px;
-    height: 180px;
-    position: relative;
-    border-radius: 14px; /* Tăng nhẹ để viền đẹp hơn */
-    padding: 2px; /* Khoảng trống cho lớp giả */
-    overflow: hidden; /* Quan trọng để animation không bị tràn ra ngoài */
+/* --- BỔ SUNG CHO FORM 2 INPUT --- */
+.input-group + .input-group {
+  margin-top: 20px;
 }
-
-/* Lớp giả để tạo hiệu ứng viền chạy */
-.music-player-frame::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: conic-gradient(
-        transparent,
-        var(--accent-primary-pink),
-        var(--accent-secondary-cyan),
-        transparent 30%
-    );
-    animation: border-glow 4s linear infinite;
-    z-index: -1;
-}
-
-/* Keyframe cho animation viền chạy */
-@keyframes border-glow {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-.music-player-frame iframe {
-    width: 100%;
-    height: 100%;
-    /* Thêm một lớp nền tối bên dưới iframe để viền nổi bật hơn */
-    background: #030419; 
-    border-radius: 12px;
-    position: relative; /* Đảm bảo iframe nằm trên lớp giả */
-    z-index: 1;
+.btn-neon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }

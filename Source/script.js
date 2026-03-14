@@ -206,7 +206,7 @@ break;
 button.disabled = true;
 button.classList.add('disabled-feature');
 const reason = command.isVip
-? 'Tính năng này yêu cầu Key VIP. Hãy nâng cấp!'
+? 'Tính năng này yêu cầu Tài khoản VIP. Hãy nâng cấp!'
 : 'Bạn không có quyền truy cập tính năng này.';
 button.addEventListener('click', () => showInfoTooltip("Tính Năng Bị Khóa", reason));
 }
@@ -943,7 +943,8 @@ window.addEventListener('load', async () => {
     console.log("✅ Phiên hợp lệ. Tất cả tài nguyên đã tải. Bắt đầu khởi tạo giao diện.");
 
     const keyInfo = JSON.parse(localStorage.getItem('ttp_key_info') || '{}');
-    refs.keyInfoDiv.innerHTML = `Chào mừng, <strong>${keyInfo.name || 'User'}</strong>!<br><span>HSD Key: ${keyInfo.expiry || 'N/A'}</span>`;
+    refs.keyInfoDiv.innerHTML = `Tài khoản: <strong>${keyInfo.name || 'User'}</strong><br><span>HSD: ${keyInfo.expiry || 'Vĩnh viễn'}</span>`;
+
 
     // Gán sự kiện cho các thành phần tĩnh
     refs.runDiagnosticsBtn.addEventListener('click', runDiagnostics);
