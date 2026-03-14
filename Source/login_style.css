@@ -54,7 +54,6 @@ body {
 /* --- Các phần còn lại của CSS giữ nguyên y hệt phiên bản trước --- */
 .card-glass { background: transparent; backdrop-filter: none; border: none; box-shadow: none; border-radius: 20px; }
 .input-group { position: relative; }
-
 .input-neon, .btn-neon {
   width: 100%; height: 52px; padding: 14px; border-radius: 12px; border: 1px solid var(--border-color);
   background: var(--glass-bg); backdrop-filter: blur(5px);
@@ -90,14 +89,4 @@ input:-webkit-autofill:active {
     -webkit-box-shadow: 0 0 0 30px #182133 inset !important;
     -webkit-text-fill-color: var(--text-primary) !important;
     transition: background-color 5000s ease-in-out 0s;
-}
-/* --- BỔ SUNG CHO FORM 2 INPUT --- */
-.input-group + .input-group {
-  margin-top: 20px;
-}
-.btn-neon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
 }
