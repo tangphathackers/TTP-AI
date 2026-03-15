@@ -1,6 +1,28 @@
 // login_main.js — Phiên bản Auth Supabase + Hiệu ứng GSAP & Audio
 
 document.addEventListener("DOMContentLoaded", () => {
+// 1. TỰ ĐỘNG ĐĂNG NHẬP (BỎ QUA MÀN HÌNH LOGIN NẾU ĐÃ LƯU SESSION)
+  const savedSession = localStorage.getItem('ttp_key_info');
+  if (savedSession) {
+    try {
+      const sessionData = JSON.parse(savedSession);
+      // Kiểm tra xem hạn sử dụng còn không
+      if (new Date(sessionData.expiry) > new Date()) {
+        window.location.href = '/dashboard'; // Bay thẳng vào màn hình chính
+        return;
+      } else {
+        localStorage.removeItem('ttp_key_info'); // Hết hạn thì xóa đi bắt đăng nhập lại
+      }
+    } catch (e) {}
+  }
+
+  // 2. TẠO HOẶC LẤY DEVICE ID (Giả lập Android ID cho Web)
+  let deviceId = localStorage.getItem('ttp_device_id');
+  if (!deviceId) {
+    // Tạo một ID độc nhất vô nhị cho thiết bị này và lưu vĩnh viễn
+    deviceId = 'DEV-' + crypto.randomUUID(); 
+    localStorage.setItem('ttp_device_id', deviceId);
+  }
   const introLogo = document.getElementById("intro-logo");
   const loginContainer = document.getElementById("login-container");
 
@@ -86,7 +108,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: user, key: pass }) 
+        // Gắn thêm device_id vào gói tin JSON
+        body: JSON.stringify({ id: user, key: pass, device_id: deviceId }) 
       });
 
       const data = await res.json().catch(() => ({}));
