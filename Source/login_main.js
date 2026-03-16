@@ -11,7 +11,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (autoRes.ok && autoData.status === "ok") {
       // Golang xác nhận máy này hợp lệ, đã cấp lại Session Cookie mới!
-      localStorage.setItem('ttp_key_info', JSON.stringify({ name: autoData.name, expiry: autoData.expiry }));
+
+      localStorage.setItem('ttp_key_info', JSON.stringify({ 
+        name: autoData.name, 
+        expiry: autoData.expiry,
+        allowedFeatures: autoData.allowedFeatures 
+      }));
       window.location.href = '/dashboard'; 
       return; // Cắt đứt luồng chạy, chặn hiển thị form Login
     } else {
@@ -26,6 +31,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (window.initCryptoScene) {
     window.initCryptoScene();
   }
+
 
   // 2. Animation Logo Intro
   if (introLogo && window.gsap) {
