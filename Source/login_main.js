@@ -3,6 +3,19 @@
 document.addEventListener("DOMContentLoaded", async () => {
   const introLogo = document.getElementById("intro-logo");
   const loginContainer = document.getElementById("login-container");
+  const TTP_SECRET_KEY = "ttp_secret_key"; 
+
+async function generateHMAC(message, secret) {
+    const encoder = new TextEncoder();
+    const keyData = encoder.encode(secret);
+    const msgData = encoder.encode(message);
+    const cryptoKey = await crypto.subtle.importKey(
+        'raw', keyData, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+    );
+    const signature = await crypto.subtle.sign('HMAC', cryptoKey, msgData);
+    return Array.from(new Uint8Array(signature)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
 
   // GỌI THẲNG LÊN GOLANG ĐỂ KIỂM TRA ANDROID_ID VẬT LÝ
   try {
@@ -87,6 +100,22 @@ document.addEventListener("DOMContentLoaded", async () => {
   const sendAuth = async (endpoint, actionName) => {
     const user = usernameInput.value.trim();
     const pass = passwordInput.value.trim();
+    const payload = JSON.stringify({ id: user, key: pass });
+    const timestamp = Math.floor(Date.now() / 1000).toString();
+    const nonce = Math.random().toString(36).substring(2, 15);
+    const signature = await generateHMAC(payload + timestamp + nonce, TTP_SECRET_KEY);
+
+    try {
+        const res = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-TTP-Signature': signature,
+                'X-TTP-Timestamp': timestamp,
+                'X-TTP-Nonce': nonce
+            },
+            body: payload 
+        });
 
     if (!user || !pass) {
       statusText.textContent = "Vui lòng nhập đủ Tên đăng nhập và Mật khẩu!";

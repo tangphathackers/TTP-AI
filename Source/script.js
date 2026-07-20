@@ -4,13 +4,36 @@ import { initParticles } from './particles.js';
 // --- SECURE COMMUNICATIONS MODULE ---
 const SecureComms = (() => {
 const serverHost = "127.0.0.1:8080";
+const TTP_SECRET_KEY = "ttp_secret_key"; // Phải khớp với requestSigningKey ở Backend Go
+
+async function generateHMAC(message, secret) {
+    const encoder = new TextEncoder();
+    const keyData = encoder.encode(secret);
+    const msgData = encoder.encode(message);
+    const cryptoKey = await crypto.subtle.importKey(
+        'raw', keyData, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+    );
+    const signature = await crypto.subtle.sign('HMAC', cryptoKey, msgData);
+    return Array.from(new Uint8Array(signature)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
 async function sendRequest(endpoint, payload) {
-const response = await fetch(`https://` + serverHost + endpoint, {
-method: 'POST',
-headers: { 'Content-Type': 'application/json' },
-credentials: 'include',
-body: JSON.stringify(payload)
-});
+    const bodyString = JSON.stringify(payload);
+    const timestamp = Math.floor(Date.now() / 1000).toString();
+    const nonce = Math.random().toString(36).substring(2, 15);
+    const signature = await generateHMAC(bodyString + timestamp + nonce, TTP_SECRET_KEY);
+
+    const response = await fetch(`https://` + serverHost + endpoint, {
+        method: 'POST',
+        headers: { 
+            'Content-Type': 'application/json',
+            'X-TTP-Signature': signature,
+            'X-TTP-Timestamp': timestamp,
+            'X-TTP-Nonce': nonce
+        },
+        credentials: 'include',
+        body: bodyString
+    });
 const responseData = await response.json();
 if (!response.ok) {
 if (response.status === 401 || response.status === 403) {
