@@ -5,26 +5,37 @@ document.addEventListener("DOMContentLoaded", async () => {
   const loginContainer = document.getElementById("login-container");
   const TTP_SECRET_KEY = "ttp_secret_key"; 
 
-async function generateHMAC(message, secret) {
-    const encoder = new TextEncoder();
-    const keyData = encoder.encode(secret);
-    const msgData = encoder.encode(message);
-    const cryptoKey = await crypto.subtle.importKey(
-        'raw', keyData, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
-    );
-    const signature = await crypto.subtle.sign('HMAC', cryptoKey, msgData);
-    return Array.from(new Uint8Array(signature)).map(b => b.toString(16).padStart(2, '0')).join('');
-}
-
+  async function generateHMAC(message, secret) {
+      const encoder = new TextEncoder();
+      const keyData = encoder.encode(secret);
+      const msgData = encoder.encode(message);
+      const cryptoKey = await crypto.subtle.importKey(
+          'raw', keyData, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+      );
+      const signature = await crypto.subtle.sign('HMAC', cryptoKey, msgData);
+      return Array.from(new Uint8Array(signature)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
 
   // GỌI THẲNG LÊN GOLANG ĐỂ KIỂM TRA ANDROID_ID VẬT LÝ
   try {
-    const autoRes = await fetch('/autologin', { method: 'POST' });
+    // Autologin cũng là POST nên phải cấp HMAC (Body rỗng)
+    const timestamp = Math.floor(Date.now() / 1000).toString();
+    const nonce = Math.random().toString(36).substring(2, 15);
+    const signature = await generateHMAC("" + timestamp + nonce, TTP_SECRET_KEY);
+
+    const autoRes = await fetch('/autologin', { 
+        method: 'POST',
+        headers: {
+            'X-TTP-Signature': signature,
+            'X-TTP-Timestamp': timestamp,
+            'X-TTP-Nonce': nonce
+        }
+    });
+    
     const autoData = await autoRes.json().catch(() => ({}));
 
     if (autoRes.ok && autoData.status === "ok") {
       // Golang xác nhận máy này hợp lệ, đã cấp lại Session Cookie mới!
-
       localStorage.setItem('ttp_key_info', JSON.stringify({ 
         name: autoData.name, 
         expiry: autoData.expiry,
@@ -44,7 +55,6 @@ async function generateHMAC(message, secret) {
   if (window.initCryptoScene) {
     window.initCryptoScene();
   }
-
 
   // 2. Animation Logo Intro
   if (introLogo && window.gsap) {
@@ -100,23 +110,8 @@ async function generateHMAC(message, secret) {
   const sendAuth = async (endpoint, actionName) => {
     const user = usernameInput.value.trim();
     const pass = passwordInput.value.trim();
-    const payload = JSON.stringify({ id: user, key: pass });
-    const timestamp = Math.floor(Date.now() / 1000).toString();
-    const nonce = Math.random().toString(36).substring(2, 15);
-    const signature = await generateHMAC(payload + timestamp + nonce, TTP_SECRET_KEY);
 
-    try {
-        const res = await fetch(endpoint, {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'X-TTP-Signature': signature,
-                'X-TTP-Timestamp': timestamp,
-                'X-TTP-Nonce': nonce
-            },
-            body: payload 
-        });
-
+    // KIỂM TRA ĐẦU VÀO TRƯỚC KHI GỬI
     if (!user || !pass) {
       statusText.textContent = "Vui lòng nhập đủ Tên đăng nhập và Mật khẩu!";
       statusText.style.color = "#ff453a"; 
@@ -135,14 +130,23 @@ async function generateHMAC(message, secret) {
     btnText.innerHTML = `<span class="spinner"></span> Đang ${actionName.toLowerCase()}...`;
     statusText.textContent = "";
 
+    // TẠO CHỮ KÝ HMAC
+    const payloadStr = JSON.stringify({ id: user, key: pass });
+    const timestamp = Math.floor(Date.now() / 1000).toString();
+    const nonce = Math.random().toString(36).substring(2, 15);
+    const signature = await generateHMAC(payloadStr + timestamp + nonce, TTP_SECRET_KEY);
+
     try {
-            const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-
-        body: JSON.stringify({ id: user, key: pass }) 
+      const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 
+              'Content-Type': 'application/json',
+              'X-TTP-Signature': signature,
+              'X-TTP-Timestamp': timestamp,
+              'X-TTP-Nonce': nonce
+          },
+          body: payloadStr 
       });
-
 
       const data = await res.json().catch(() => ({}));
 
@@ -184,7 +188,7 @@ async function generateHMAC(message, secret) {
   // 5. Gắn sự kiện Click và Enter
   if (verifyBtn) verifyBtn.addEventListener('click', () => sendAuth('/verify', 'Đăng nhập'));
   if (registerBtn) registerBtn.addEventListener('click', () => sendAuth('/register', 'Đăng ký'));
-if (passwordInput) {
+  if (passwordInput) {
       passwordInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') sendAuth('/verify', 'Đăng nhập');
       });
