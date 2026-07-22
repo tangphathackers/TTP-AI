@@ -2,57 +2,122 @@
 // --- MODULES & IMPORTS ---
 import { initParticles } from './particles.js';
 // --- SECURE COMMUNICATIONS MODULE ---
+// --- SECURE COMMUNICATIONS MODULE (BẢN FULL-STACK SECURITY) ---
 const SecureComms = (() => {
-const serverHost = "127.0.0.1:8080";
-const TTP_SECRET_KEY = "ttp_secret_key"; // Phải khớp với requestSigningKey ở Backend Go
+    const serverHost = "127.0.0.1:8080";
+    let sessionKeyCrypto = null; // Chìa khóa giải mã AES (Lưu trên RAM)
+    let signKeyCrypto = null;    // Chìa khóa ký HMAC (Lưu trên RAM)
+    let isInitializing = false;
+    let initPromise = null;
 
-async function generateHMAC(message, secret) {
-    const encoder = new TextEncoder();
-    const keyData = encoder.encode(secret);
-    const msgData = encoder.encode(message);
-    const cryptoKey = await crypto.subtle.importKey(
-        'raw', keyData, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
-    );
-    const signature = await crypto.subtle.sign('HMAC', cryptoKey, msgData);
-    return Array.from(new Uint8Array(signature)).map(b => b.toString(16).padStart(2, '0')).join('');
-}
+    // Hàm chuyển đổi Key từ dạng chuỗi sang đối tượng Web Crypto
+    async function importKeys(base64Session, base64Sign) {
+        const rawSession = Uint8Array.from(atob(base64Session), c => c.charCodeAt(0));
+        const rawSign = Uint8Array.from(atob(base64Sign), c => c.charCodeAt(0));
+        sessionKeyCrypto = await crypto.subtle.importKey("raw", rawSession, { name: "AES-GCM" }, false, ["decrypt"]);
+        signKeyCrypto = await crypto.subtle.importKey("raw", rawSign, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+    }
 
-async function sendRequest(endpoint, payload) {
-    const bodyString = JSON.stringify(payload);
-    const timestamp = Math.floor(Date.now() / 1000).toString();
-    const nonce = Math.random().toString(36).substring(2, 15);
-    const signature = await generateHMAC(bodyString + timestamp + nonce, TTP_SECRET_KEY);
+    // Khởi động tĩnh lặng: Lấy Key từ API autologin trước khi làm bất cứ điều gì
+    async function initializeKeys() {
+        if (sessionKeyCrypto && signKeyCrypto) return;
+        if (isInitializing) return initPromise;
+        
+        isInitializing = true;
+        initPromise = (async () => {
+            try {
+                const response = await fetch(`https://${serverHost}/autologin`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: "{}"
+                });
+                const data = await response.json();
+                if (data.status === 'ok' && data.session_key && data.sign_key) {
+                    await importKeys(data.session_key, data.sign_key);
+                    console.log("🔐 Kênh giao tiếp AES-GCM đã mở thành công!");
+                } else {
+                    throw new Error("Không thể lấy Key bảo mật.");
+                }
+            } catch (e) {
+                console.error("Lỗi bảo mật:", e);
+                localStorage.removeItem("ttp_key_info");
+                window.location.href = '/';
+            } finally {
+                isInitializing = false;
+            }
+        })();
+        return initPromise;
+    }
 
-    const response = await fetch(`https://` + serverHost + endpoint, {
-        method: 'POST',
-        headers: { 
-            'Content-Type': 'application/json',
-            'X-TTP-Signature': signature,
-            'X-TTP-Timestamp': timestamp,
-            'X-TTP-Nonce': nonce
-        },
-        credentials: 'include',
-        body: bodyString
-    });
-const responseData = await response.json();
-if (!response.ok) {
-if (response.status === 401 || response.status === 403) {
-alert("Phiên đăng nhập không hợp lệ hoặc đã hết hạn. Vui lòng đăng nhập lại.");
-localStorage.removeItem("ttp_key_info");
-window.location.href = '/';
-}
-throw new Error(responseData.message || `Lỗi HTTP: ${response.status}`);
-}
-return responseData;
-}
-return {
-exec: (cmd) => sendRequest('/ttp-ai-exec', { cmd }),
-chat: (prompt) => sendRequest('/chat-ai', { prompt }),
-getDeviceDetails: () => sendRequest('/get-device-details', {}),
-getCommands: () => sendRequest('/get-commands', {}),
-executeCombo: (aliases) => sendRequest('/execute-combo', { aliases }), // <-- HÀM MỚI
-};
+    // Tạo chữ ký động (HMAC-SHA256)
+    async function generateHMAC(path, timestamp, nonce, rawBody) {
+        const payloadStr = `${path}:${timestamp}:${nonce}:${rawBody}`;
+        const encoder = new TextEncoder();
+        const signatureBuffer = await crypto.subtle.sign('HMAC', signKeyCrypto, encoder.encode(payloadStr));
+        return Array.from(new Uint8Array(signatureBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    // Giải mã kết quả trả về từ cục máu "enc"
+    async function decryptData(base64Ciphertext) {
+        const data = Uint8Array.from(atob(base64Ciphertext), c => c.charCodeAt(0));
+        const nonce = data.slice(0, 12);
+        const ciphertext = data.slice(12);
+        const decryptedBuffer = await crypto.subtle.decrypt({ name: "AES-GCM", iv: nonce }, sessionKeyCrypto, ciphertext);
+        return JSON.parse(new TextDecoder().decode(decryptedBuffer));
+    }
+
+    // Hàm gọi API cốt lõi
+    async function sendRequest(endpoint, payload) {
+        await initializeKeys(); // 1. Chờ nạp Key hoàn tất
+
+        const bodyString = JSON.stringify(payload);
+        const timestamp = Math.floor(Date.now() / 1000).toString();
+        const nonce = Math.random().toString(36).substring(2, 15);
+        
+        // 2. Ký Payload với nội dung chuẩn
+        const signature = await generateHMAC(endpoint, timestamp, nonce, bodyString);
+
+        // 3. Gửi đi với Header mới (X-TTP-Sig thay cho Signature cũ)
+        const response = await fetch(`https://${serverHost}${endpoint}`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-TTP-Sig': signature,
+                'X-TTP-Ts': timestamp,
+                'X-TTP-Nonce': nonce
+            },
+            credentials: 'include',
+            body: bodyString
+        });
+
+        if (!response.ok) {
+            if (response.status === 401 || response.status === 403) {
+                alert("Phiên đăng nhập không hợp lệ hoặc bị chặn. Đang bảo vệ dữ liệu...");
+                localStorage.removeItem("ttp_key_info");
+                window.location.href = '/';
+            }
+            throw new Error(`Lỗi HTTP: ${response.status}`);
+        }
+
+        const responseData = await response.json();
+        
+        // 4. Đón lõng và giải mã tự động
+        if (responseData.enc) {
+            return await decryptData(responseData.enc);
+        }
+        return responseData;
+    }
+
+    return {
+        exec: (cmd) => sendRequest('/ttp-ai-exec', { cmd }),
+        chat: (prompt) => sendRequest('/chat-ai', { prompt }),
+        getDeviceDetails: () => sendRequest('/get-device-details', {}),
+        getCommands: () => sendRequest('/get-commands', {}),
+        executeCombo: (aliases) => sendRequest('/execute-combo', { aliases })
+    };
 })();
+
 // --- GLOBAL REFERENCES & STATE ---
 const refs = {
 outputToast: document.getElementById('output'),
